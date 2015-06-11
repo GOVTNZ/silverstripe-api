@@ -1,6 +1,6 @@
 {
     "name": "govtnz/silverstripe-api",
-    "description": "A Swagger-compatible Silverstripe API using the facade pattern with interfaces.",
+    "description": "A facade pattern API implementation for Silverstripe using interfaces and Swagger",
     "type": "library",
     "homepage": "https://github.com/govtnz/silverstripe-api.git",
     "keywords": ["Silverstripe", "API", "Facade pattern", "PHP", "Interface"],
