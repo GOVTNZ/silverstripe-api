@@ -23,7 +23,7 @@ This is called the **API data directory**, and it can be anywhere you wish: our 
 You may want to put your Swagger page class and template files here, along with any modified CSS files etc, but you don't have to:
 if you prefer to store these with files of the same type within your website, that's is up to you.
 
-The path to the API data directory needs to be set in a .yml config file.
+The path to the API data directory needs to be set in a .yml config file. The path should be preceded by a forward slash.
 ```
 API:
   data_dir: '[PATH]'
@@ -76,13 +76,13 @@ API:
 ```
 1. Copy the contents of */vendor/govtnz/silverstripe-api/resources/data-dir* to this new directory.
 1. Run *dev/build* if you haven't done so since installing *govtnz/silverstripe-api*.
-1. Run the dev task *API: Build*.
+1. Run the dev task *API: Build definitions*.
  
 Now when you visit your new Swagger page you should be able to explore the contents of the test file using Swagger.
 
 ### How Swagger is provisioned 
 * Each interface defined in *[data_dir]/interfaces* is an API node, and each interface definition includes comments that document the use of each function.
-* When the dev task *API: Build* is run, all interface files are parsed and an *api.json* file created in the root of the **API data directory**.
-* The .yml config entry for *data_dir* tells the Swagger UI where to find these files.
+* When the dev task *API: Build definitions* is run, all interface files are parsed and an *api.json* file created in the root of the **API data directory**.
+* The .yml config entry for *data_dir* tells the Swagger UI where to look for these files.
 
 
