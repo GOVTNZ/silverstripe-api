@@ -1,0 +1,8 @@
+---
+Name: silverstripe-api
+After: 'framework/*','cms/*'
+---
+
+Director:
+  rules:
+    'api': 'APIWorker'

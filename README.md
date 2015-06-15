@@ -5,65 +5,84 @@ A facade pattern API implementation for Silverstripe using interfaces and Swagge
 ## Introduction
 This is an opinionated package that implements a Silverstripe API with the following features:
 * Each API node is described in a PHP interface file.
-* Each interface function definition includes formatted comments which are used to populate a Swagger .json file when a *dev task* is run.
+* Optional integration with a Swagger UI instance.
 * A stub file implements each interface for testing.
 * The real world implementation of each interface can be assigned to any (one) class.
 
-&nbsp;
-## Documentation
-This file provides an
+This package is being developed progressively by the Govt.nz team, and features are being added as they're required for our own project. 
+This means that some features required by other users have not yet been implemented. OAuth and permissions checking, for example, will only be added when we need them ourselves.
+While this is not ideal, we don't have the resources to add functionality until it's on our own development roadmap.
+We'd be delighted if others forked and extended this package to provide some of the functionality we've not included.
 
 &nbsp;
-## Installation directory
-This package installs by default into */vendor/govtnz/silverstripe-api*.
+## Structure
+This package installs into */vendor/govtnz/silverstripe-api*.
 
-&nbsp;
-## Swagger
-[Swagger](http://swagger.io/) is optional but recommended. 
-It provides interactive documentation for your API, and can be easily integrated with any Silverstripe page template.
-Govt.nz maintains [a fork of the Swagger UI](https://github.com/govtnz/swagger-ui.git) whose only change is inclusion of a *composer.json* file.
-This makes it straightforward for us to maintain and for you to include. 
-But you can pull in the original package by any means you wish - even just by copying the contents of the */dist* directory.
+You need another directory to store your interface definitions, stub files for testing and the resulting .json API definition etc.
+This is called the **API data directory**, and it can be anywhere you wish: our own implementation has this as a root directory, but that's not mandatory.
+You may want to put your Swagger page class and template files here, along with any modified CSS files etc, but you don't have to:
+if you prefer to store these with files of the same type within your website, that's is up to you.
 
-### Installation and visibility
-Once you have it installed, the location of swagger-ui's */dist* directory has to be set in a yml config file.
-```
-API:
-  swagger_dist_dir: '[PATH]'
-```
-There are files under this directory that need to be visible from the web:
-1. /dist/swagger-ui.js
-1. /dist/lib/\*
-1. /dist/images/\*
-1. /dist/css/\* if you want to use the original Swagger stylesheets
-1. /dist/fonts/\* if you want to use the Swagger fonts
-
-If swagger-ui is in the default location you'll need to modify your site's *.htacess* file accordingly:
-```
-RedirectMatch 404 /vendor(?!/govtnz/swagger-ui/dist/lib|/govtnz/swagger-ui/dist/images|/govtnz/swagger-ui/dist/swagger-ui\.js)
-```
-Regardless of where your swagger-ui package is, it's desirable to prevent access to those assets which are not required; the above *.htaccess* rule can be adapted to suit your environment.
-
-### Customisation
-If you want to modify the appearance of the Swagger UI, you could copy the CSS files to another directory within your site and customise them.
-Alternatively the *silverstripe-api* package includes a SASS file which was extracted from the original CSS using [css2scss](http://sebastianpontow.de/css2compass/);
-it's in the */examples* folder. 
-If you use Compass, this could be a useful shortcut.
-
-### Integration
-Displaying the Swagger UI requires a page type whose controller includes the Swagger UI javascript files, and a corresponding page template with the appropriate HTML.
-The code you need is in the */examples* folder.
-
-&nbsp;
-## Data directory
-You need a folder to store your interface definitions, stub files for testing, .json API definition etc.
-You may want to make this a root directory module and put your Swagger page class and template files here, along with any modified CSS files etc.
-You may prefer to store these with files of the same type within your website - how you structure this is up to you.
-
-However you choose to structure your data and associated files, the paths to these resources need to be set in a .yml config file.
+The path to the API data directory needs to be set in a .yml config file.
 ```
 API:
   data_dir: '[PATH]'
-  swagger_dist_dir: '[PATH]'
 ```
+
+Within the API data directory the following structure must be adhered to.
+```
+data_dir
+  |---v1
+  |   |---interfaces 
+  |   |---stubs
+  |   |---tests  
+  |   api.json
+  |
+  |---v2
+      ... etc   
+```
+
+
+&nbsp;
+## How *silverstripe-api* works
+1. *APIWorker* invokes *APIRequestSerialiser* to parse incoming requests into 
+  * a noun (eg *organisation*, *activity* etc), 
+  * a verb (GET, PUT, POST, DELETE), 
+  * a version (eg *v1*, *v2* etc),
+  * a format (JSON and XML are initially supported) and 
+  * parameters (there can be zero or more parameters).
+1. *APIWorker* then invokes *APIAuthenticator* which applies OAuth and permissions checking (note that this is currently a stub - see the *Introduction* above).
+1. *APIWorker* invokes the class which implements the interface corresponding to the *noun*, *verb* and *version*.
+1. *APIWorker* invokes *APIResponseSerialiser* to return the resulting data in the requested format.   
+ 
+
+&nbsp;
+## Swagger
+[Swagger](http://swagger.io/) is optional but highly recommended, as it provides interactive documentation for your API.
+If you include the recommended comments in your interface files, *govtnz/silverstripe-api* will automatically generate the .json file Swagger UI requires.
+There is a companion package, [govtnz/swagger-ui](https://github.com/govtnz/swagger-ui.git), which forks Swagger UI and makes it easy to include in a Silverstripe project.
+See the documentation within this [companion Swagger package](https://github.com/govtnz/swagger-ui.git) for more details.
+
+### Swagger installation testing
+If you install Swagger alongside this package, you can test that the installation is correct and that these two packages 
+(*govtnz/silverstripe-api* and *govtnz/swagger-ui*) will play nicely together with the following steps.
+
+1. Install *govtnz/swagger-ui*, create a new Swagger page type and a new instance of this page type.
+1. Create your **API data directory**.
+1. Add the following entry to a .yml config file:
+```
+API:
+     data_dir: '[PATH]'
+```
+1. Copy the contents of */vendor/govtnz/silverstripe-api/resources/data-dir* to this new directory.
+1. Run *dev/build* if you haven't done so since installing *govtnz/silverstripe-api*.
+1. Run the dev task *API: Build*.
+ 
+Now when you visit your new Swagger page you should be able to explore the contents of the test file using Swagger.
+
+### How Swagger is provisioned 
+* Each interface defined in *[data_dir]/interfaces* is an API node, and each interface definition includes comments that document the use of each function.
+* When the dev task *API: Build* is run, all interface files are parsed and an *api.json* file created in the root of the **API data directory**.
+* The .yml config entry for *data_dir* tells the Swagger UI where to find these files.
+
 
