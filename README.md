@@ -36,7 +36,7 @@ data_dir
   |   |---interfaces 
   |   |---stubs
   |   |---tests  
-  |   api.json
+  |   swagger.json
   |
   |---v2
       ... etc   
@@ -82,7 +82,7 @@ Now when you visit your new Swagger page you should be able to explore the conte
 
 ### How Swagger is provisioned 
 * Each interface defined in *[data_dir]/interfaces* is an API node, and each interface definition includes comments that document the use of each function.
-* When the dev task *API: Build definitions* is run, all interface files are parsed and an *api.json* file created in the root of the **API data directory**.
+* When the dev task *API: Build definitions* is run, all interface files are parsed and a *swagger.json* file created in the root of the **API data directory**.
 * The .yml config entry for *data_dir* tells the Swagger UI where to look for these files.
 
 

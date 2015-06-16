@@ -1,7 +1,7 @@
 {
     "name": "govtnz/silverstripe-api",
     "description": "A facade pattern API implementation for Silverstripe using interfaces and Swagger",
-    "type": "library",
+    "type": "silverstripe-module",
     "homepage": "https://github.com/govtnz/silverstripe-api.git",
     "keywords": ["Silverstripe", "API", "Facade pattern", "PHP", "Interface"],
     "license": "MIT License",
@@ -10,5 +10,9 @@
             "name": "Govt.nz",
             "email": "govtnz@dia.govt.nz"
         }
-    ]
+    ],
+    "require": {
+        "silverstripe/framework": "~3.1",
+        "silverstripe/cms": "~3.1"
+    }
 }

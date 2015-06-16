@@ -1,0 +1,62 @@
+    // When "API: Build definitions" is called, everything in this directory's files between /* */ tags will be merged recursively to create the api.json file, starting with this file.
+    // For the full Swagger specification, see http://swagger.io/specification/
+
+    // Every interfaces subdirectory must have a single file called base.txt.
+    // This file defines properties that are common across all the interface nodes.
+    // The "API: Build definitions" task replaces the two methods getHost and getProtocol with actual values. You can hard-code these if you prefer.
+
+    /*
+        {
+          "swagger": "2.0",
+          "info": {
+            "description": "This is a sample interface distributed with https://github.com/govtnz/silverstripe-api.git. There are more details in https://github.com/GOVTNZ/silverstripe-api/blob/master/README.md ",
+            "version": "2.0.0",
+            "title": "Instrument inventory",
+            "termsOfService": "https://github.com/govtnz/silverstripe-api/",
+            "contact": {
+              "email": "govtnz@dia.govt.nz"
+            },
+            "license": {
+              "name": "Released under the MIT License",
+              "url": "https://github.com/GOVTNZ/silverstripe-api/blob/master/LICENSE"
+            }
+          },
+          "host": "<% getHost %>",
+          "basePath": "/v2",
+          "tags": [],
+          "schemes": [
+            "<% getProtocol %>"
+          ],
+          "paths": {},
+          "definitions": {
+            "ApiResponse": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "securityDefinitions": {
+            "api_key": {
+              "type": "apiKey",
+              "name": "api_key",
+              "in": "header"
+            }
+          },
+          "externalDocs": {
+            "description": "Find out more about silverstripe-api",
+            "url": "https://github.com/govtnz/silverstripe-api"
+          }
+        }
+    */
+
+}
