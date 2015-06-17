@@ -1,5 +1,7 @@
 # silverstripe-api
-A facade pattern API implementation for Silverstripe using interfaces and Swagger
+A facade pattern API implementation for Silverstripe using interfaces and optionally Swagger
+
+&nbsp;
 
 &nbsp;
 ## Introduction
@@ -11,22 +13,28 @@ This is an opinionated package that implements a Silverstripe API with the follo
 
 This package is being developed progressively by the Govt.nz team, and features are being added as they're required for our own project. 
 This means that some features required by other users have not yet been implemented. OAuth and permissions checking, for example, will only be added when we need them ourselves.
-While this is not ideal, we don't have the resources to add functionality until it's on our own development roadmap.
-We'd be delighted if others forked and extended this package to provide some of the functionality we've not included.
+We don't have the resources to add functionality until it's on our own development roadmap, so we'd be delighted if others extended this package to provide some of the functionality we've not yet included.
+
+&nbsp;
 
 &nbsp;
 ## Structure
-This package installs into */vendor/govtnz/silverstripe-api*.
+This package installs into */silverstripe-api*.
 
 You need another directory to store your interface definitions, stub files for testing and the resulting .json API definition etc.
 This is called the **API data directory**, and it can be anywhere you wish: our own implementation has this as a root directory, but that's not mandatory.
 You may want to put your Swagger page class and template files here, along with any modified CSS files etc, but you don't have to:
-if you prefer to store these with files of the same type within your website, that's is up to you.
+if you prefer to store these with files of the same type within your website, that's up to you.
 
-The path to the API data directory needs to be set in a .yml config file. The path should be preceded by a forward slash.
+The path to the API data directory needs to be set in a .yml config file:
 ```
 API:
   data_dir: '[PATH]'
+```
+The path should be preceded by a forward slash. For example:
+```
+API:
+  data_dir: '/api/data'
 ```
 
 Within the API data directory the following structure must be adhered to.
@@ -36,24 +44,30 @@ data_dir
   |   |---interfaces 
   |   |---stubs
   |   |---tests  
-  |   swagger.json
   |
   |---v2
       ... etc   
 ```
 
+&nbsp;
+
+&nbsp;
+## The facade pattern and interface files
+
+
+&nbsp;
 
 &nbsp;
 ## How *silverstripe-api* works
-1. *APIWorker* invokes *APIRequestSerialiser* to parse incoming requests into 
+1. *Api_Controller* invokes *ApiRequestSerialiser* to parse incoming requests into 
   * a noun (eg *organisation*, *activity* etc), 
   * a verb (GET, PUT, POST, DELETE), 
   * a version (eg *v1*, *v2* etc),
   * a format (JSON and XML are initially supported) and 
   * parameters (there can be zero or more parameters).
-1. *APIWorker* then invokes *APIAuthenticator* which applies OAuth and permissions checking (note that this is currently a stub - see the *Introduction* above).
-1. *APIWorker* invokes the class which implements the interface corresponding to the *noun*, *verb* and *version*.
-1. *APIWorker* invokes *APIResponseSerialiser* to return the resulting data in the requested format.   
+1. *api_Controller* then invokes *ApiAuthenticator* which applies OAuth and permissions checking (note that this is currently a stub - see the *Introduction* above).
+1. *api_Controller* invokes the class which implements the interface corresponding to the *noun*, *verb* and *version*.
+1. *api_Controller* invokes *ApiResponseSerialiser* to return the resulting data in the requested format.   
  
 
 &nbsp;
