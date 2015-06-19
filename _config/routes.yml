@@ -1,8 +1,7 @@
 ---
-Name: silverstripe-api
-After: 'framework/*','cms/*'
+Name: silverstripeapiroutes
+After: framework/routes#coreroutes
 ---
-
 Director:
   rules:
     'api': 'Api_Controller'

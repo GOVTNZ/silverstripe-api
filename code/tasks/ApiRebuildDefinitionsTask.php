@@ -39,7 +39,7 @@ class ApiRebuildDefinitionsTask extends BuildTask {
         $swagger = $this->mergeJsonFromFile($swagger, $base);
 
         foreach (glob("$dir/$subdir/interfaces/ApiInterface_*.php") as $file){
-            $this->mergeJsonFromFile($swagger, $file);
+            $swagger = $this->mergeJsonFromFile($swagger, $file);
         }
         // Save output
         $output = json_encode($swagger);

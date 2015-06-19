@@ -1,0 +1,7 @@
+---
+Name: api
+After: 'framework/*','cms/*'
+---
+
+API:
+  default_pagination: 20
