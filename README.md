@@ -21,6 +21,7 @@ We don't have the resources to add features until they're on our own development
 
 ### Quick start
 The */resources/data_dir* subdirectory within this module contains interface samples.
+
 1. Copy the entire subdirectory to a suitable location (see **API data** below).
 Ensure you don't copy the *_manifest_exclude* file, which is outside this subdirectory.
 1. Run *dev/build*. 
@@ -70,6 +71,7 @@ But splitting it up improves maintainability, and the dev task *API: Rebuild def
 All the interface definition files are kept in an */interfaces* subdirectory. 
 
 However you structure your API definition, it needs to be
+
 1. standard JSON,
 1. aligned with the Swagger 2.0 specification, and
 1. contained in mulit-line comment blocks:
@@ -124,6 +126,7 @@ The examples put common definitions at the top of each file, and function-specif
 While this can make the API definition easier to maintain, it's not mandatory.
 
 What is mandatory is the structure of each PHP function definition.
+
 1. The function name is defined in the corresponding *"path"* section of the JSON fragment as the *operationID*.
 2. Each function takes only one parameter: the *Api_Controller* instance handling that API request.
 The controller exposes all the parameters the function will need to fulfill the API request, and in turn the function will populate the controller's *output* property with the response.
@@ -134,6 +137,7 @@ The controller exposes all the parameters the function will need to fulfill the 
 ##Other files
 ### Stub files
 Each file in the *stubs* directory implements an API interface using static data. It is invoked in one of two circumstances:
+
 1. When a *test* parameter is added to an API request, for example `&test=true`.
 1. When there is no other implementation of an API interface.
 
@@ -150,6 +154,7 @@ These can be stored in the */tests* subdirectory.
 &nbsp;
 ## How *silverstripe-api* works
 For each incoming request, an instance of *Api_Controller* is created, and this controller then manages the following steps:
+
 1. *ApiRequestSerialiser* is invoked to parse the request.
 1. The controller loads the *swagger.json* file to determine which interface and function should handle the request.
 1. *ApiAuthenticator* applies OAuth and permissions checking (note that this is currently a stub - see the *Introduction* above).
