@@ -77,7 +77,9 @@ However you structure your API definition, it needs to be
 1. contained in mulit-line comment blocks:
    ```
    /* 
+   
      (json here) 
+     
    */
    ``` 
 
@@ -130,6 +132,8 @@ What is mandatory is the structure of each PHP function definition.
 1. The function name is defined in the corresponding *"path"* section of the JSON fragment as the *operationID*.
 2. Each function takes only one parameter: the *Api_Controller* instance handling that API request.
 The controller exposes all the parameters the function will need to fulfill the API request, and in turn the function will populate the controller's *output* property with the response.
+
+Check the contents of the */resources* files for examples.
 
 &nbsp;
 
