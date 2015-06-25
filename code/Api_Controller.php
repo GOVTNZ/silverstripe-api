@@ -20,10 +20,11 @@ class Api_Controller extends Page_Controller {
         $fields = null,
         $filter = '',
         $format = 'json',
+        $implementer = null,
         $limit = null,
         $method = '',
         $noun = '',
-        $output = '',
+        $output = null,
         $params = null,
         $sort = null,
         $status = 200,
@@ -39,14 +40,21 @@ class Api_Controller extends Page_Controller {
 
         // Generate
         if ($this->status === 200) {
-            $ApiImplementer = $this->getImplementerClass();
-            if (!is_null($ApiImplementer))
-                $ApiImplementer->$this->method($this);
+            $output = array();
+            $implementerclass = $this->getImplementerClass();
+            if (!is_null($implementerclass)) {
+                $this->implementer = new $implementerclass();
+                $method = $this->method;
+                $this->implementer->{$method}($this);
+            }
             else if (Director::isDev())
                 $this->testOutput();
         }
+        else
+            $this->populateErrorResponse();
 
         // Deliver
+        $this->setStandardHeaders();
         $ApiResponse = $this->getResponseSerialiser();
         return $ApiResponse->execute($this);
     }
@@ -97,9 +105,9 @@ class Api_Controller extends Page_Controller {
 
     private function getImplementerClass(){
         $version = sprintf('%02d', $this->version);
-        $interface = "ApiInterface_$this->noun"."_$version";
+        $interface = "ApiInterface_$this->noun" . "_$version";
         $implementers = ClassInfo::implementorsOf($interface);
-        if (count($implementers) === 0){
+        if (count($implementers) === 0) {
             $this->setError(array(
                 "status" => 500,
                 "dev" => "There is no implementation for $this->noun in API v$this->version",
@@ -107,7 +115,29 @@ class Api_Controller extends Page_Controller {
             ));
             return null;
         }
-        else
+
+        // Check for, and remove or return, any test implementation
+        $pos = 0;
+        while ($pos < count($implementers) && count($implementers) > 1){
+            if (strpos(strtolower($implementers[$pos]), 'apistub_') === 0){
+                if ($this->test)
+                    return $implementers[$pos];
+                else
+                    unset($implementers[$pos]);
+            }
+            else
+                $pos++;
+        }
+
+        // Ensure we only have one "real" implementation
+        if (count($implementers) > 1) {
+            $this->setError(array(
+                "status" => 500,
+                "dev" => "There is more than one implementation for $this->noun in API v$this->version",
+                "user" => "The server is not able to fulfill this request"
+            ));
+            return null;
+        } else
             return $implementers[0];
     }
 
@@ -115,6 +145,18 @@ class Api_Controller extends Page_Controller {
         $class = "ApiResponseSerialiser_".ucfirst($this->format);
         $formatter = new $class();
         return $formatter;
+    }
+
+    private function populateErrorResponse(){
+        $this->output = $this->error;
+    }
+
+    private function setStandardHeaders(){
+        $this->getResponse()->setStatusCode($this->status);
+        $this->getResponse()->addHeader("access-control-allow-origin", "*");
+        $this->getResponse()->addHeader("access-control-allow-methods", "GET, POST, DELETE, PUT");
+        $this->getResponse()->addHeader("access-control-allow-headers", "api_key, Authorization");
+        $this->getResponse()->addHeader("connection", "close");
     }
 
     private function testOutput(){

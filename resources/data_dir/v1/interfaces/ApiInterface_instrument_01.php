@@ -1,6 +1,6 @@
 <?php
 
-interface ApiInterface_instrument_01{
+interface ApiInterface_instrument_01 {
 
     // When "API: Build definitions" is called, everything between /* */ tags will be merged recursively to create the api.json file.
     // Structure within this file is purely for readability: all the JSON comment could be in a single block if you prefer.
@@ -25,8 +25,8 @@ interface ApiInterface_instrument_01{
                 "Instrument": {
                     "type": "object",
                     "properties": {
-                            "id": {
-                                "type": "integer",
+                        "id": {
+                            "type": "integer",
                             "format": "int64"
                         },
                         "name": {
@@ -44,7 +44,7 @@ interface ApiInterface_instrument_01{
         }
     */
 
-    public function findInstrumentBySection($worker){
+    public function findInstrumentsBySection(Api_Controller $controller);
         /*
             {
               "paths": {
@@ -54,7 +54,7 @@ interface ApiInterface_instrument_01{
                     "tags": [
                       "instrument"
                     ],
-                    "description": "Multiple sections can be provided with comma seperated strings",
+                    "description": "Multiple sections can be requested with comma separated strings",
                     "operationId": "findInstrumentsBySection",
                     "produces": [
                       "application/xml",
@@ -72,7 +72,7 @@ interface ApiInterface_instrument_01{
                           "enum": [
                             "brass",
                             "strings",
-                            "tympani",
+                            "percussion",
                             "woodwind"
                           ],
                           "default": "strings"
@@ -86,27 +86,21 @@ interface ApiInterface_instrument_01{
                         "schema": {
                           "type": "array",
                           "items": {
-                            "$ref": "#/definitions/Instruments"
+                            "$ref": "#/definitions/Instrument"
                           }
                         }
                       },
                       "400": {
                         "description": "Invalid section value"
                       }
-                    },
-                    "security": [
-                      {
-                        "api_key": []
-                      }
-                    ]
+                    }
                   }
                 }
               }
             }
         */
-    }
 
-    public function getInstrumentById($worker){
+    public function getInstrumentById(Api_Controller $controller);
         /*
             {
               "paths": {
@@ -145,16 +139,11 @@ interface ApiInterface_instrument_01{
                       "404": {
                         "description": "Instrument not found"
                       }
-                    },
-                    "security": [
-                      {
-                        "api_key": []
-                      }
-                    ]
+                    }
                   }
                 }
               }
             }
         */
-    }
+
 }

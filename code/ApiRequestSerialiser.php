@@ -26,6 +26,7 @@ class ApiRequestSerialiser {
 
         $serialiser->parseRequestFields($controller);
         $serialiser->parseRequestFormat($controller);
+        $serialiser->parseRequestTest($controller);
 
         // Filters, sorting and pagination only apply if we're returning more than one record
         if (isset($serialiser->responses->{"200"}->schema->type) && $serialiser->responses->{"200"}->schema->type === 'array'){
@@ -83,7 +84,7 @@ class ApiRequestSerialiser {
         // Iterate through the paths in the Swagger file
         foreach($controller->swagger->paths as $key=>$value){
             // If we find a key that matches the path ...
-            if (strpos($key, "/$noun/$param") !== FALSE){
+            if (strpos(strtolower($key), strtolower("/$noun/$param")) !== FALSE){
                 // ... and the value contains a property matching the verb (get/put/post/delete) ...
                 if (property_exists($value, $controller->verb)){
                     // ... and the value contains an operationId ...
@@ -186,12 +187,20 @@ class ApiRequestSerialiser {
 
     /**
      * @param $controller
-     * Checks for a supported extension (.json, .xml etc) in the request and sets the controller's format property if there is one
+     * Checks for a supported extension (.json, .xml etc) in the request or header and sets the controller's format property
      */
     private function parseRequestFormat($controller){
         $format = strtolower($controller->request->getExtension());
         if (isset($format) && $this->formatSupported($format))
             $controller->format = $format;
+        else {
+            $formatstr = strtolower($controller->request->getHeader('Accept'));
+            if (isset($formatstr)) {
+                $formatarr = explode('/', $formatstr);
+                if (count($formatarr) > 1 && $this->formatSupported($formatarr[1]))
+                    $controller->format = $formatarr[1];
+            }
+        }
     }
 
     /**
@@ -247,7 +256,7 @@ class ApiRequestSerialiser {
 
     /**
      * @param $controller
-     * Checks for sortby and sortorder vars in the request and populates the controller's sort array if they exist
+     * Checks for a sort var in the request and populates the controller's sort array if it exists
      */
     private function parseRequestSort($controller){
         // Sort fields
@@ -269,6 +278,17 @@ class ApiRequestSerialiser {
 
     /**
      * @param $controller
+     * Checks for a test var in the request (test=[anything]) and sets the controller's test value if it exists
+     */
+    private function parseRequestTest($controller){
+        $value = $controller->request->requestVar('test');
+        if (isset($value))
+            $controller->test = TRUE;
+    }
+
+    /**
+     * @param $controller
+     * @return bool
      * Iterates through the required vars for the requested path, populating the controller's params array
      */
     private function parseRequestVars($controller){

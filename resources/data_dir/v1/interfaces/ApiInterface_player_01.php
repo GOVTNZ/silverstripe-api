@@ -1,6 +1,6 @@
 <?php
 
-interface ApiInterface_player_02{
+interface ApiInterface_player_01 {
 
     // When "API: Build definitions" is called, everything between /* */ tags will be merged recursively to create the api.json file.
     // Structure within this file is purely for readability: all the JSON comment could be in a single block if you prefer.
@@ -14,7 +14,7 @@ interface ApiInterface_player_02{
             "tags": [
                 {
                     "name": "player",
-                    "description": "Orchestral players",
+                    "description": "Orchestra personnel",
                     "externalDocs": {
                         "description": "Find out more",
                         "url": "https://github.com/GOVTNZ/silverstripe-api/blob/master/README.md"
@@ -35,12 +35,11 @@ interface ApiInterface_player_02{
                         "lastname": {
                             "type": "string"
                         },
-                        "instrumentID": {
-                            "type": "integer",
-                            "format": "int64"
-                        },
-                        "url": {
-                            "type": "string"
+                        "instrument": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
                         }
                     }
                 }
@@ -48,7 +47,7 @@ interface ApiInterface_player_02{
         }
     */
 
-    public function findPlayersByInstrument($worker){
+    public function findPlayersByInstrument($controller);
         /*
             {
               "paths": {
@@ -80,7 +79,7 @@ interface ApiInterface_player_02{
                         "schema": {
                           "type": "array",
                           "items": {
-                            "$ref": "#/definitions/Players"
+                            "$ref": "#/definitions/Player"
                           }
                         }
                       },
@@ -90,20 +89,14 @@ interface ApiInterface_player_02{
                       "404": {
                         "decsription": "No players found for this instrument"
                       }
-                    },
-                    "security": [
-                      {
-                        "api_key": []
-                      }
-                    ]
+                    }
                   }
                 }
               }
             }
         */
-    }
 
-    public function getPlayerById($worker){
+    public function getPlayerById($controller);
         /*
             {
               "paths": {
@@ -142,17 +135,11 @@ interface ApiInterface_player_02{
                       "404": {
                         "description": "Player not found"
                       }
-                    },
-                    "security": [
-                      {
-                        "api_key": []
-                      }
-                    ]
+                    }
                   }
                 }
               }
             }
         */
-    }
 
 }

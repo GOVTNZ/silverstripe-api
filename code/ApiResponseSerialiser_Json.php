@@ -3,7 +3,6 @@
 class ApiResponseSerialiser_Json {
 
     public function execute($controller){
-        $controller->getResponse()->setStatusCode($controller->status);
         $controller->getResponse()->addHeader('Content-Type', 'application/json');
         return $this->json_format($controller->output);
     }

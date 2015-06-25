@@ -2,10 +2,14 @@
 
 class ApiRebuildDefinitionsTask extends BuildTask {
 
-    protected $title = 'API: Rebuild definitions';
-    protected $description = 'Parse the API interface definitions and rebuild the output JSON file';
-    protected $enabled = true;
-    private $baseUrl = '';
+    protected
+            $title = 'API: Rebuild definitions',
+            $description = 'Parse the API interface definitions and rebuild the output JSON file',
+            $enabled = true;
+
+    private
+        $baseUrl = '',
+        $swaggerDir = '';
 
     public function run($request) {
         $starttime = time();
@@ -43,10 +47,21 @@ class ApiRebuildDefinitionsTask extends BuildTask {
         }
         // Save output
         $output = json_encode($swagger);
-        if (!file_exists(Director::baseFolder()."/assets/api/$subdir"))
-            mkdir(Director::baseFolder()."/assets/api/$subdir", 0755, true);
-        file_put_contents(Director::baseFolder()."/assets/api/$subdir/swagger.json", $output);
-        $this->out("Created swagger.json for $subdir");
+        $base = $this->getSwaggerBaseDir();
+        if (!file_exists($base."/$subdir"))
+            mkdir($base."/$subdir", 0755, true);
+        file_put_contents($base."/$subdir/swagger.json", $output);
+        $this->out("Created swagger.json for $subdir in $base/$subdir");
+    }
+
+    private function getSwaggerBaseDir(){
+        if ($this->swaggerDir === '') {
+            $dir = Config::inst()->get('Swagger', 'data_dir');
+            $this->swaggerDir = Director::baseFolder() . ((isset($dir)) ? $dir : "/assets/api");
+            if (!file_exists($this->swaggerDir))
+                mkdir($this->swaggerDir, 0755, true);
+        }
+        return $this->swaggerDir;
     }
 
     private function mergeJsonBlock($swagger, $block){
@@ -67,7 +82,7 @@ class ApiRebuildDefinitionsTask extends BuildTask {
                     $swagger = $this->mergeJsonBlock($swagger, $block);
                     $block = '';
                 }
-                else if ($json){
+                else if ($json && strpos(trim($line), '//') !== 0){
                     $line = $this->parseJson($line);
                     $block .= $line;
                 }

@@ -11,7 +11,7 @@
           "info": {
             "description": "This is a sample interface distributed with https://github.com/govtnz/silverstripe-api.git. There are more details in https://github.com/GOVTNZ/silverstripe-api/blob/master/README.md ",
             "version": "1.0.0",
-            "title": "Instrument inventory",
+            "title": "Orchestra inventory",
             "termsOfService": "https://github.com/govtnz/silverstripe-api/",
             "contact": {
               "email": "govtnz@dia.govt.nz"

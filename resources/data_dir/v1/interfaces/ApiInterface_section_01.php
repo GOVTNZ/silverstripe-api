@@ -1,6 +1,6 @@
 <?php
 
-interface ApiInterface_section_02 {
+interface ApiInterface_section_01 {
 
     // When "API: Build definitions" is called, everything between /* */ tags will be merged recursively to create the api.json file.
     // Structure within this file is purely for readability: all the JSON comment could be in a single block if you prefer.
@@ -41,7 +41,53 @@ interface ApiInterface_section_02 {
         }
      */
 
-    public function getSections($worker){
+    public function getSectionById($controller);
+        /*
+            {
+              "paths": {
+                "/section/{sectionId}": {
+                  "get": {
+                    "tags": [
+                      "section"
+                    ],
+                    "summary": "Find section by ID",
+                    "description": "Returns a single section of the orchestra",
+                    "operationId": "getSectionById",
+                    "produces": [
+                      "application/xml",
+                      "application/json"
+                    ],
+                    "parameters": [
+                      {
+                        "name": "sectionID",
+                        "in": "path",
+                        "description": "ID of section to return",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                      }
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "successful operation",
+                        "schema": {
+                          "$ref": "#/definitions/Section"
+                        }
+                      },
+                      "400": {
+                        "description": "Invalid ID supplied"
+                      },
+                      "404": {
+                        "description": "Section not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        */
+
+    public function getSections($controller);
         /*
             {
               "paths": {
@@ -68,17 +114,11 @@ interface ApiInterface_section_02 {
                           }
                         }
                       }
-                    },
-                    "security": [
-                      {
-                        "api_key": []
-                      }
-                    ]
+                    }
                   }
                 }
               }
             }
          */
-    }
 
 }

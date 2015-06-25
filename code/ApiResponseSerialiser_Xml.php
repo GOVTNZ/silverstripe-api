@@ -4,7 +4,6 @@ class ApiResponseSerialiser_Xml
 {
 
     public function execute($controller) {
-        $controller->getResponse()->setStatusCode($controller->status);
         $controller->getResponse()->addHeader('Content-Type', 'application/xml');
         return $this->xml_format($controller);
     }
@@ -18,13 +17,13 @@ class ApiResponseSerialiser_Xml
                     $this->array_to_xml($value, $subnode);
                 }
                 else {
-                    $subnode = $xml->addChild("item".sprintf("%02d", $key));
+                    $subnode = $xml->addChild("item".sprintf("%02d", $key + 1));
                     $this->array_to_xml($value, $subnode);
                 }
             }
             else {
                 if (is_numeric($key))
-                    $xml->addChild("item".sprintf("%02d", $key), htmlspecialchars("$value"));
+                    $xml->addChild("item".sprintf("%02d", $key + 1), htmlspecialchars("$value"));
                 else
                     $xml->addChild("$key", htmlspecialchars("$value"));
             }
@@ -32,7 +31,7 @@ class ApiResponseSerialiser_Xml
     }
 
     private function xml_format($controller){
-        $xml = new SimpleXMLElement("<?xml version=\"1.0\"?><$controller->noun></$controller->noun>");
+        $xml = new SimpleXMLElement("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><$controller->noun></$controller->noun>");
         $this->array_to_xml($controller->output, $xml);
         return $xml->asXML();
     }
