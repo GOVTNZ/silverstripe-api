@@ -33,7 +33,8 @@ class ApiResponseSerialiser_Xml
 
     private function xml_format($controller){
         $xml = new SimpleXMLElement("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><response></response>");
-        $this->array_to_xml($controller->formatOutput(), $xml, $controller->noun);
+        $pronoun = ($controller->pronoun === '') ? $controller->noun : $controller->pronoun;
+        $this->array_to_xml($controller->formatOutput(), $xml, $pronoun);
         return $xml->asXML();
     }
 

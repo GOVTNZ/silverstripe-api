@@ -26,6 +26,7 @@ class Api_Controller extends Page_Controller {
         $noun = '',
         $output = null,
         $params = null,
+        $pronoun = '',
         $sort = null,
         $status = 200,
         $swagger = null,
@@ -79,13 +80,14 @@ class Api_Controller extends Page_Controller {
     }
 
     public function formatOutput(){
+        $pronoun = ($this->pronoun === '') ? $this->noun."s" : $this->pronoun."s";
         $out = array(
             "query" => array(
                 "offset" => (is_null($this->limit)) ? 0 : $this->limit['offset'],
-                "count" => (is_null($this->limit)) ? 'all' : min($this->limit['count'], $this->total),
-                "total" => $this->total
+                "count" => intval(git (is_null($this->limit)) ? $this->total : min($this->limit['count'], $this->total)),
+                "total" => intval($this->total)
             ),
-            $this->noun."s" => $this->output
+            $pronoun => $this->output
         );
         return $out;
     }
