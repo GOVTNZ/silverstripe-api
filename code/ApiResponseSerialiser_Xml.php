@@ -9,21 +9,22 @@ class ApiResponseSerialiser_Xml
     }
 
     // function definition to convert array to xml
-    private function array_to_xml($data, &$xml) {
+    private function array_to_xml($data, &$xml, $itemname) {
         foreach($data as $key => $value) {
             if(is_array($value)) {
                 if(!is_numeric($key)){
-                    $subnode = $xml->addChild("$key");
-                    $this->array_to_xml($value, $subnode);
+                    $subnode = $xml->addChild((substr($key, -1) === 's' || $key === "query") ? $key : $key."s");
+                    $this->array_to_xml($value, $subnode, ((substr($key, -1) === 's') ? substr($key, 0, -1) : $key));
                 }
                 else {
-                    $subnode = $xml->addChild("item".sprintf("%02d", $key + 1));
-                    $this->array_to_xml($value, $subnode);
+                    $subnode = $xml->addChild($itemname); //.sprintf("%02d", $key + 1));
+                    $this->array_to_xml($value, $subnode, "item");
                 }
             }
             else {
                 if (is_numeric($key))
-                    $xml->addChild("item".sprintf("%02d", $key + 1), htmlspecialchars("$value"));
+                    //$xml->addChild("item".sprintf("%02d", $key + 1), htmlspecialchars("$value"));
+                    $xml->addChild($itemname, htmlspecialchars("$value"));
                 else
                     $xml->addChild("$key", htmlspecialchars("$value"));
             }
@@ -31,8 +32,8 @@ class ApiResponseSerialiser_Xml
     }
 
     private function xml_format($controller){
-        $xml = new SimpleXMLElement("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><$controller->noun></$controller->noun>");
-        $this->array_to_xml($controller->output, $xml);
+        $xml = new SimpleXMLElement("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><response></response>");
+        $this->array_to_xml($controller->formatOutput(), $xml, $controller->noun);
         return $xml->asXML();
     }
 

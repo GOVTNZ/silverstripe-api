@@ -68,6 +68,10 @@ class ApiRebuildDefinitionsTask extends BuildTask {
         $json = json_decode($block, true);
         if (is_null($swagger) || empty($swagger))
             return $json;
+        if (is_null($json)) {
+            $this->out('Block beginning '.str_replace("\n", "", substr($block, 0, 80)).' is not valid JSON', 'err');
+            return $swagger;
+        }
         return array_merge_recursive($swagger, $json);
     }
 

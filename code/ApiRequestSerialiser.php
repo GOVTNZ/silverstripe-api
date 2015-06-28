@@ -269,9 +269,7 @@ class ApiRequestSerialiser {
             foreach ($sortfields as $field){
                 $order = ($field[0] === '-') ? 'DESC' : 'ASC';
                 $sort = ($field[0] === '-' || $field[0] === '+') ? substr($field, 1) : $field;
-                $controller->sort[] = array(
-                    $sort => $order
-                );
+                $controller->sort[$sort] = $order;
             }
         }
     }

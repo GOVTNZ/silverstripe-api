@@ -30,6 +30,7 @@ class Api_Controller extends Page_Controller {
         $status = 200,
         $swagger = null,
         $test = FALSE,
+        $total = 0,
         $verb = '',
         $version = 0;
 
@@ -45,7 +46,16 @@ class Api_Controller extends Page_Controller {
             if (!is_null($implementerclass)) {
                 $this->implementer = new $implementerclass();
                 $method = $this->method;
-                $this->implementer->{$method}($this);
+                try {
+                    $this->implementer->{$method}($this);
+                }
+                catch(Exception $except) {
+                    $this->setError(array(
+                        "status" => 500,
+                        "dev" => "Error processing request: please check your syntax against the request definition",
+                        "user" => "This request could not be processed"
+                    ));
+                }
             }
             else if (Director::isDev())
                 $this->testOutput();
@@ -57,6 +67,27 @@ class Api_Controller extends Page_Controller {
         $this->setStandardHeaders();
         $ApiResponse = $this->getResponseSerialiser();
         return $ApiResponse->execute($this);
+    }
+
+    /**
+     * A utility function that simplistically converts standard MySQL timestamps (2015-06-28 00:00:00) to RFC3339 format (2015-06-28T00:00:00+12:00)
+     * @param $input
+     * @return string
+     */
+    public function dateDBto3339($input){
+        return str_replace(' ', 'T', $input).'+12:00';
+    }
+
+    public function formatOutput(){
+        $out = array(
+            "query" => array(
+                "offset" => (is_null($this->limit)) ? 0 : $this->limit['offset'],
+                "count" => (is_null($this->limit)) ? 'all' : min($this->limit['count'], $this->total),
+                "total" => $this->total
+            ),
+            $this->noun."s" => $this->output
+        );
+        return $out;
     }
 
     public function loadSwagger($version){
