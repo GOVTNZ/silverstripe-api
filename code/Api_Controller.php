@@ -71,12 +71,24 @@ class Api_Controller extends Page_Controller {
     }
 
     /**
-     * A utility function that simplistically converts standard MySQL timestamps (2015-06-28 00:00:00) to RFC3339 format (2015-06-28T00:00:00+12:00)
+     * A utility function that converts an RFC3339 timestamp (2015-06-28T00:00:00+12:00) to MySQL format (2015-06-28 00:00:00)
+     * @param $input
+     */
+    public function date3339toDB($input){
+        // HTTPDecode will not restore the + before the timezone offset; this causes strtotime to break, so we must replace it
+        $date = strtotime(str_replace(' ', '+', $input));
+        return date('Y-m-d H:i:s', $date);
+    }
+
+    /**
+     * A utility function that converts a MySQL timestamp (2015-06-28 00:00:00) to RFC3339 format (2015-06-28T00:00:00+12:00)
      * @param $input
      * @return string
      */
     public function dateDBto3339($input){
-        return str_replace(' ', 'T', $input).'+12:00';
+        $offset = date('Z');
+        $zone = sprintf("%s%02d:%02d", ($offset >= 0) ? '+' : '-', abs($offset / 3600), abs($offset % 3600));
+        return str_replace(' ', 'T', $input).$zone;
     }
 
     public function formatOutput(){
