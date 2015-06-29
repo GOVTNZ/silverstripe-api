@@ -84,7 +84,7 @@ class Api_Controller extends Page_Controller {
         $out = array(
             "query" => array(
                 "offset" => (is_null($this->limit)) ? 0 : $this->limit['offset'],
-                "count" => intval(git (is_null($this->limit)) ? $this->total : min($this->limit['count'], $this->total)),
+                "count" => intval((is_null($this->limit)) ? $this->total : min($this->limit['count'], $this->total)),
                 "total" => intval($this->total)
             ),
             $pronoun => $this->output

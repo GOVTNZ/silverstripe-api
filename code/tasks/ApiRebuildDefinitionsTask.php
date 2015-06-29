@@ -58,7 +58,20 @@ class ApiRebuildDefinitionsTask extends BuildTask {
         if ($this->swaggerDir === '') {
             $dir = Config::inst()->get('Swagger', 'data_dir');
             $this->swaggerDir = Director::baseFolder() . ((isset($dir)) ? $dir : "/assets/api");
-            if (!file_exists($this->swaggerDir))
+            // If the directory exists, empty it
+            if (file_exists($this->swaggerDir)){
+                $dirs = array_diff(scandir($this->swaggerDir), array('.', '..'));
+                foreach ($dirs as $dir) {
+                    if (is_dir("$this->swaggerDir/$dir")) {
+                        $files = array_diff(scandir("$this->swaggerDir/$dir"), array('.', '..'));
+                        foreach ($files as $file)
+                            unlink("$this->swaggerDir/$dir/$file");
+                    }
+                    rmdir("$this->swaggerDir/$dir");
+                }
+            }
+            // Otherwise create it
+            else
                 mkdir($this->swaggerDir, 0755, true);
         }
         return $this->swaggerDir;
