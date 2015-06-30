@@ -13,6 +13,11 @@ class ApiRequestSerialiser {
         $responses = null,
         $vars = null;
 
+
+    /**
+     * Entry function.
+     * @param $controller
+     */
     public static function execute($controller){
         $serialiser = new ApiRequestSerialiser;
 
@@ -30,7 +35,6 @@ class ApiRequestSerialiser {
 
         // Filters, sorting and pagination only apply if we're returning more than one record
         if (isset($serialiser->responses->{"200"}->schema->type) && $serialiser->responses->{"200"}->schema->type === 'array'){
-            $serialiser->parseRequestFilters($controller);
             $serialiser->parseRequestSort($controller);
             $serialiser->parseRequestLimit($controller);
         }
@@ -58,6 +62,8 @@ class ApiRequestSerialiser {
         return FALSE;
     }
 
+
+
     /**
      * @return array|scalar
      * Returns either the instance's configured pagination limit or, if that isn't set, the package's pagination limit
@@ -68,6 +74,8 @@ class ApiRequestSerialiser {
             $limit = Config::inst()->get('API', 'default_pagination');
         return $limit;
     }
+
+
 
     /**
      * @param $controller
@@ -113,6 +121,8 @@ class ApiRequestSerialiser {
         return FALSE;
     }
 
+
+
     /**
      * @param $controller
      * @param $noun
@@ -146,6 +156,8 @@ class ApiRequestSerialiser {
         return FALSE;
     }
 
+
+
     /**
      * @param $controller
      * Checks for a case var in the request and updates the controller's case property
@@ -155,6 +167,8 @@ class ApiRequestSerialiser {
         if (isset($case))
             $controller->case = strtolower($case);
     }
+
+
 
     /**
      * @param $controller
@@ -166,24 +180,11 @@ class ApiRequestSerialiser {
             $controller->fields = array();
             $fieldlist = explode(",", $fields);
             foreach ($fieldlist as $field)
-                $controller->fields[] = $field;
+                $controller->fields[] = $controller->caseCamel($field);
         }
     }
 
-    /**
-     * @param $controller
-     * Checks for filters vars in the request and populates the controller's filters array if it exists
-     */
-    private function parseRequestFilters($controller){
-        // TODO Get and check the output definition so we can match field types and know which need to be quoted
-        // TODO Waiting on feedback from Mark and perhaps James
-        $filters = $controller->request->requestVar("filter");
-        if (isset($filter)){
-            $filters = str_ireplace('and', ' AND ', $filters);
-            $filters = str_ireplace('or', ' OR ', $filters);
 
-        }
-    }
 
     /**
      * @param $controller
@@ -202,6 +203,8 @@ class ApiRequestSerialiser {
             }
         }
     }
+
+
 
     /**
      * @param $controller
@@ -222,6 +225,8 @@ class ApiRequestSerialiser {
         $offset = $controller->request->requestVar('offset');
         $controller->limit["offset"] = (isset($offset)) ? $offset : 0;
     }
+
+
 
     /**
      * @param $controller
@@ -246,13 +251,15 @@ class ApiRequestSerialiser {
         if ($controller->status !== 200)
             return FALSE;
 
-        $action = strtolower($controller->request->param("Action"));
+        $action = $controller->caseCamel(strtolower($controller->request->param("Action")));
         if (isset($action)){
             $controller->action = (isset($action) && $this->isActionValid($controller, $noun, $action)) ? $action : '';
         }
 
         return ($controller->status === 200);
     }
+
+
 
     /**
      * @param $controller
@@ -274,6 +281,8 @@ class ApiRequestSerialiser {
         }
     }
 
+
+
     /**
      * @param $controller
      * Checks for a test var in the request (test=[anything]) and sets the controller's test value if it exists
@@ -283,6 +292,8 @@ class ApiRequestSerialiser {
         if (isset($value))
             $controller->test = TRUE;
     }
+
+
 
     /**
      * @param $controller
@@ -311,7 +322,7 @@ class ApiRequestSerialiser {
                 $controller->params[$param->name] = $controller->action;
             // Any other parameters must be query vars
             else {
-                $value = $controller->request->requestVar($param->name);
+                $value = $controller->request->requestVar($controller->caseRequest($param->name));
                 if (!isset($value) && $param->required === TRUE) {
                     $controller->setError(array(
                         "status" => 400,
@@ -321,11 +332,13 @@ class ApiRequestSerialiser {
                     return FALSE;
                 }
                 else
-                    $controller->params[$param->name] = $value;
+                    $controller->params[$param->name] = $controller->caseCamel($value);
             }
         }
         return TRUE;
     }
+
+
 
     /**
      * @param $controller

@@ -159,13 +159,44 @@ These can be stored in the */tests* subdirectory.
 ## How *silverstripe-api* works
 For each incoming request, an instance of *Api_Controller* is created, and this controller then manages the following steps:
 
-1. *ApiRequestSerialiser* is invoked to parse the request.
+1. *ApiRequestSerialiser* is invoked to parse the request. 
+Request fieldnames are converted to camelCase at this point.
 1. The controller loads the *swagger.json* file to determine which interface and function should handle the request.
 1. *ApiAuthenticator* applies OAuth and permissions checking (note that this is currently a stub - see the *Introduction* above).
 1. The controller invokes the implementation class for the required interface and calls the indicated function.
 1. The implementation class retrieves the requested data.
-1. One of the *ApiResponseSerialiser* classes is invoked to return the data in the requested format.   
+1. One of the *ApiResponseSerialiser* classes is invoked to return the data in the requested format.
+
+### Utility functions
+There are several useful functions in the controller:
+
+* **caseCamel($field)** ensures *$field* is in camelCase.
+* **caseRequest($field)** ensures *$field* is in the case specified in the request (default camelCase). 
+Simple, one word field names are the same in camelCase and snake_case, but more complex field names can be passed through this function when generating your output.
+* **caseSnake($field)** ensures *$field* is in snake_case.
+* **date3339toDB($input)** converts an RFC3339 timestamp (2015-06-28T00:00:00+12:00) to MySQL format (2015-06-28 00:00:00).
+* **dateDBto3339($input)** converts a MySQL timestamp (2015-06-28 00:00:00) to RFC3339 format (2015-06-28T00:00:00+12:00).
+* **formatOutput()** returns an array containing two nodes: the query total, count and offset; the output data previously assigned to *output*.
+* **logAdd($text)** populates the controller's internal log; sometimes useful for debugging.
+* **logGet()** returns the controller's internal log as an array; sometimes useful for debugging.
+* **param($name)** returns either the request parameter *$name*, or an empty string if this doesn't exist.
+* **setError($params)** takes an array containing a *status* value and one or more error messages. 
+It changes the controller's status and sets the error messages to be returned.
  
+### Implementation
+Your implementation code can:
+* Rely on field names being in camelCase.
+* Retrieve request parameters from the controller's *param()* function.
+* Convert request and response dates using *date3339toDB()* and *dateDBto3339()*.
+* Call the controller's *setError()* function if you are unable to process the request.
+
+Your implementation must:
+* Call *caseRequest()* for any output field that is more than a simple one word name.
+* Assign generated data to the controller's *output* property as an array.
+* Set the controller's *pronoun* property if the type of the output data is not the same as the base type of the API node.
+For example, the API method *organisation/sector* returns a list of organisation sectors, not a list of organisations.
+In this instance set *pronoun* to *sector* so the output is appropriately described. 
+
 &nbsp;
 
 &nbsp;

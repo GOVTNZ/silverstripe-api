@@ -18,7 +18,7 @@ class Api_Controller extends Page_Controller {
         $case = 'camel',
         $error = null,
         $fields = null,
-        $filter = '',
+        //$filter = '',
         $format = 'json',
         $implementer = null,
         $limit = null,
@@ -34,6 +34,8 @@ class Api_Controller extends Page_Controller {
         $total = 0,
         $verb = '',
         $version = 0;
+
+
 
     public function index(){
         // Prepare
@@ -70,6 +72,50 @@ class Api_Controller extends Page_Controller {
         return $ApiResponse->execute($this);
     }
 
+
+
+    /**
+     * Utility function that converts a fieldname to camelCase
+     * @param $field
+     * @return string
+     */
+    public function caseCamel($field){
+        $out = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $field))));
+        return $out;
+    }
+
+
+
+    /**
+     * Utility function that converts a fieldname to whatever case is specified in the request
+     * @param $field
+     * @return string
+     */
+    public function caseRequest($field){
+        switch ($this->case) {
+            case 'snake':
+                return $this->caseSnake($field);
+            default:
+                return $this->caseCamel($field);
+        }
+    }
+
+
+
+    /**
+     * Utility function that converts a fieldname to snake_case
+     * @param $field
+     * @return string
+     */
+    public function caseSnake($field){
+        $out = preg_replace_callback('/[A-Z]/',
+            create_function('$match', 'return "_" . strtolower($match[0]);'),
+            $field);
+        return $out;
+    }
+
+
+
     /**
      * A utility function that converts an RFC3339 timestamp (2015-06-28T00:00:00+12:00) to MySQL format (2015-06-28 00:00:00)
      * @param $input
@@ -79,6 +125,8 @@ class Api_Controller extends Page_Controller {
         $date = strtotime(str_replace(' ', '+', $input));
         return date('Y-m-d H:i:s', $date);
     }
+
+
 
     /**
      * A utility function that converts a MySQL timestamp (2015-06-28 00:00:00) to RFC3339 format (2015-06-28T00:00:00+12:00)
@@ -91,6 +139,12 @@ class Api_Controller extends Page_Controller {
         return str_replace(' ', 'T', $input).$zone;
     }
 
+
+
+    /**
+     * Returns an array with two nodes, one containing the query offset, count and total, the other containing the request data response.
+     * @return array
+     */
     public function formatOutput(){
         $pronoun = ($this->pronoun === '') ? $this->noun."s" : $this->pronoun."s";
         $out = array(
@@ -104,6 +158,12 @@ class Api_Controller extends Page_Controller {
         return $out;
     }
 
+
+
+    /**
+     * Loads the swagger.json file matching the requested API version.
+     * @param $version
+     */
     public function loadSwagger($version){
         // Find the location of the swagger.json file with the right version
         $dir = Config::inst()->get('Swagger', 'data_dir');
@@ -123,6 +183,13 @@ class Api_Controller extends Page_Controller {
         $this->swagger = json_decode($json);
     }
 
+
+
+    /**
+     * Adds text to the log.
+     * For development use only.
+     * @param $text
+     */
     public function logAdd($text){
         // Create the log if/when it's first needed
         if (is_null($this->log))
@@ -130,6 +197,34 @@ class Api_Controller extends Page_Controller {
         $this->log[] = $text;
     }
 
+
+
+    /**
+     * Retrieves the log array.
+     * For development use only.
+     * @return null
+     */
+    public function logGet(){
+        return $this->log;
+    }
+
+
+
+    /**
+     * Returns either the request parameter $name, or an empty string if this doesn't exist.
+     * @param $name
+     * @return string
+     */
+    public function param($name){
+        return (isset($this->params[$name]) && trim($this->params[$name]) !== '') ? trim($this->params[$name]) : '';
+    }
+
+
+
+    /**
+     * Populates the error array and changes the controller status.
+     * @param $params
+     */
     public function setError($params){
         // Create the error array if/when it's first needed
         if (is_null($this->error))
@@ -140,10 +235,6 @@ class Api_Controller extends Page_Controller {
             else
                 $this->error[$key] = $value;
         }
-    }
-
-    public function logGet(){
-        return $this->log;
     }
 
     // ------------------------------------------------------------------------
@@ -186,15 +277,21 @@ class Api_Controller extends Page_Controller {
             return $implementers[0];
     }
 
+
+
     private function getResponseSerialiser(){
         $class = "ApiResponseSerialiser_".ucfirst($this->format);
         $formatter = new $class();
         return $formatter;
     }
 
+
+
     private function populateErrorResponse(){
         $this->output = $this->error;
     }
+
+
 
     private function setStandardHeaders(){
         $this->getResponse()->setStatusCode($this->status);
@@ -203,6 +300,8 @@ class Api_Controller extends Page_Controller {
         $this->getResponse()->addHeader("access-control-allow-headers", "api_key, Authorization");
         $this->getResponse()->addHeader("connection", "close");
     }
+
+
 
     private function testOutput(){
         $this->output = array(
