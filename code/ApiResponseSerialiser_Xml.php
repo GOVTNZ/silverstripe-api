@@ -14,7 +14,18 @@ class ApiResponseSerialiser_Xml
             if(is_array($value)) {
                 if(!is_numeric($key)){
                     $subnode = $xml->addChild((substr($key, -1) === 's' || $key === "query") ? $key : $key."s");
-                    $this->array_to_xml($value, $subnode, ((substr($key, -1) === 's') ? substr($key, 0, -1) : $key));
+                    // TODO This is a nasty hack and a better, generic solution is needed.
+                    // TODO Currently any array whose name ends in "s" will be truncated: "previous" becomes "previou".
+                    // TODO We need to assign keys by exception as part of data generation as we do with pronoun.
+                    switch (TRUE){
+                        case ($key === 'previous'):
+                            $key = 'name';
+                            break;
+                        case (substr($key, -1) === 's'):
+                            $key = substr($key, 0, -1);
+                            break;
+                    }
+                    $this->array_to_xml($value, $subnode, $key);
                 }
                 else {
                     $subnode = $xml->addChild($itemname); //.sprintf("%02d", $key + 1));

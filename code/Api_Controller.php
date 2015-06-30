@@ -149,7 +149,7 @@ class Api_Controller extends Page_Controller {
         $pronoun = ($this->pronoun === '') ? $this->noun."s" : $this->pronoun."s";
         $out = array(
             "query" => array(
-                "offset" => (is_null($this->limit)) ? 0 : $this->limit['offset'],
+                "offset" => intval((is_null($this->limit)) ? 0 : $this->limit['offset']),
                 "count" => intval((is_null($this->limit)) ? $this->total : min($this->limit['count'], $this->total)),
                 "total" => intval($this->total)
             ),
