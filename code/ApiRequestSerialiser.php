@@ -115,8 +115,8 @@ class ApiRequestSerialiser {
         // If there's no match return an error message
         $controller->setError(array(
             "status" => 400,
-            "dev" => 'The combination "$noun\$action" is not supported by this API',
-            "user" => "This request contains the invalid element \"$noun\""
+            "dev" => "The combination '$noun/$action' is not supported by this API",
+            "user" => "This request cannot be fulfilled"
         ));
         return FALSE;
     }

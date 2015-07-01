@@ -53,11 +53,12 @@ class Api_Controller extends Page_Controller {
                     $this->implementer->{$method}($this);
                 }
                 catch(Exception $except) {
-                    $this->setError(array(
-                        "status" => 500,
-                        "dev" => "Error processing request: please check your syntax against the request definition",
-                        "user" => "This request could not be processed"
-                    ));
+                    if ($this->status === 200)
+                        $this->setError(array(
+                            "status" => 500,
+                            "dev" => "Error processing request: please check your syntax against the request definition",
+                            "user" => "This request could not be processed"
+                        ));
                 }
             }
             else if (Director::isDev())
@@ -146,6 +147,14 @@ class Api_Controller extends Page_Controller {
      * @return array
      */
     public function formatOutput(){
+        if ($this->status !== 200){
+            $out = array(
+                "status" => $this->status,
+                "messages" => $this->error
+            );
+            return $out;
+        }
+
         $pronoun = ($this->pronoun === '') ? $this->noun."s" : $this->pronoun."s";
         $out = array(
             "query" => array(
