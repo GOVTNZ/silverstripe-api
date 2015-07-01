@@ -70,6 +70,10 @@ class Api_Controller extends Page_Controller {
         // Deliver
         $this->setStandardHeaders();
         $ApiResponse = $this->getResponseSerialiser();
+
+        // Hook to allow analytics tracking, external logging, etc
+        $this->extend('updateController', $this);
+
         return $ApiResponse->execute($this);
     }
 
