@@ -157,6 +157,29 @@ class ApiRequestSerialiser {
     }
 
 
+    /**
+     * Checks that the type of a submitted parameter value is correct
+     * @param $param
+     * @param $value
+     * @return bool
+     */
+    private function paramTypeMatch($param, $value){
+        if ($param->type === 'integer' && !is_numeric($value))
+            return FALSE;
+        $out = TRUE;
+        if ($param->type === 'array' && $param->items->type === 'integer' && $param->collectionFormat === 'csv'){
+            $values = explode(',', $value);
+            $pos = 0;
+            while ($out && $pos < count($values)){
+                $out = is_numeric($values[$pos]);
+                $pos++;
+            }
+        }
+        // Additional checks can be added here if needed
+        return $out;
+    }
+
+
 
     /**
      * @param $controller
@@ -331,8 +354,20 @@ class ApiRequestSerialiser {
                     ));
                     return FALSE;
                 }
-                else
-                    $controller->params[$param->name] = $controller->caseCamel($value);
+                else if (isset($value)) {
+                    if ($this->paramTypeMatch($param, $value))
+                        $controller->params[$param->name] = $controller->caseCamel($value);
+                    else {
+                        $type = $param->type;
+                        $type .= ($type === 'array') ? " of ".$param->items->type : '';
+                        $controller->setError(array(
+                            "status" => 400,
+                            "dev" => "The parameter '$param->name' is defined as $type. '$value' is the wrong type.",
+                            "user" => "Your request is badly formed."
+                        ));
+                        return FALSE;
+                    }
+                }
             }
         }
         return TRUE;
