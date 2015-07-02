@@ -182,12 +182,18 @@ Simple, one word field names are the same in camelCase and snake_case, but more 
 * **param($name)** returns either the request parameter *$name*, or an empty string if this doesn't exist.
 * **setError($params)** takes an array containing a *status* value and one or more error messages. 
 It changes the controller's status and sets the error messages to be returned.
+* **xmlAdd($key, $parent, $label)** registers an XML label for a given key|parent combination.
+An asterisk * can be used to denote a numeric value.
+Registering labels is only necessary for exceptions to the general rule, which is that XML label plurals will be created by adding an "s".
+However, one important use case is one-dimensional arrays, which will have a numeric key. 
+The default behaviour is to convert any numeric key to "item" to prevent the XML breaking, but it's nicer to have a context-specific label.
  
 ### Implementation
 Your implementation code can:
 * Rely on field names being in camelCase.
 * Retrieve request parameters from the controller's *param()* function.
 * Convert request and response dates using *date3339toDB()* and *dateDBto3339()*.
+* Register labels for XML nodes with *xmlAdd()*.
 * Call the controller's *setError()* function if you are unable to process the request.
 
 Your implementation must:
@@ -195,7 +201,7 @@ Your implementation must:
 * Assign generated data to the controller's *output* property as an array.
 * Set the controller's *pronoun* property if the type of the output data is not the same as the base type of the API node.
 For example, the API method *organisation/sector* returns a list of organisation sectors, not a list of organisations.
-In this instance set *pronoun* to *sector* so the output is appropriately described. 
+In this instance set *pronoun* to *sector* so the output is appropriately described.
 
 &nbsp;
 

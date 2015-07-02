@@ -33,7 +33,8 @@ class Api_Controller extends Page_Controller {
         $test = FALSE,
         $total = 0,
         $verb = '',
-        $version = 0;
+        $version = 0,
+        $xml = null;
 
 
 
@@ -248,6 +249,50 @@ class Api_Controller extends Page_Controller {
             else
                 $this->error[$key] = $value;
         }
+    }
+
+
+    /**
+     * Registers an XML label to use for a particular key|parent combination
+     * These are only required for a label which does not simply form a plural by adding an "s"
+     * Use an asterisk * for any element that's numeric
+     * @param $key
+     * @param $parent
+     * @param $label
+     */
+    public function xmlAdd($key, $parent, $label){
+        if (is_null($this->xml))
+            $this->xml = array();
+        $this->xml["$key|$parent"] = $label;
+    }
+
+
+    /**
+     * Returns an XML label for a key|parent combination
+     * If no label exists, a simple plural is formed for parent nodes
+     * @param $key
+     * @param $parent
+     * @return string
+     */
+    public function xmlLabel($key, $parent){
+        $out = null;
+
+        // If the xml array is populated, look up this combination
+        if (!is_null($this->xml)) {
+            $lookup = ((is_numeric($key)) ? "*" : $key)."|".((is_numeric($parent)) ? "*" : $parent);
+            if (array_key_exists($lookup, $this->xml))
+                $out = $this->xml[$lookup];
+        }
+
+        // Otherwise apply standard rules
+        if (is_null($out) || $out === ''){
+            if (is_numeric($key) && $parent[strlen($parent) - 1] === 's')
+                $out = substr($parent, 0, -1);
+            else
+                $out = ($key === $parent) ? $key.'s' : $key;
+        }
+        // A catch-all to ensure we don't return a numeric key, which will break the XML
+        return (is_numeric($out)) ? "item" : $out;
     }
 
     // ------------------------------------------------------------------------
