@@ -164,19 +164,40 @@ class ApiRequestSerialiser {
      * @return bool
      */
     private function paramTypeMatch($param, $value){
-        if ($param->type === 'integer' && !is_numeric($value))
-            return FALSE;
-        $out = TRUE;
-        if ($param->type === 'array' && $param->items->type === 'integer' && $param->collectionFormat === 'csv'){
-            $values = explode(',', $value);
-            $pos = 0;
-            while ($out && $pos < count($values)){
-                $out = is_numeric($values[$pos]);
-                $pos++;
-            }
+        switch($param->type){
+            case 'array':
+                // This could be split with a switch statement on items->type
+                $out = TRUE;
+                if ($param->items->type === 'integer' && $param->collectionFormat === 'csv'){
+                    $values = explode(',', $value);
+                    $pos = 0;
+                    while ($out && $pos < count($values)){
+                        $out = is_numeric($values[$pos]);
+                        $pos++;
+                    }
+                }
+                return $out;
+            case 'integer':
+                return is_numeric($value);
+            case 'dateTime':
+            case 'string':
+                // This could be split with a switch statement on format
+                $out = TRUE;
+                if ($param->type !== 'string' || $param->format === 'dateTime') {
+                    // 2015-08-01T00:00:00+12:00 || 2015-08-01T00:00:00Z
+                    $core = substr($value, 0, 19);
+                    $out = strlen($core) === 19 && preg_match('@^\d{4}(-)((0[1-9])|(1[0-2]))(-)((0[1-9])|([1-2][0-9])|(3[0-1]))(T)(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])$@', $core);
+                    if ($out) {
+                        $zone = substr($value, 19);
+                        // If the dateTime is not encoded, a + at the start of the timezone becomes a space - we should allow this for convenience
+                        $out = ($zone === 'Z') || preg_match('@^(\+|-|\s)(([0-1][0-9])|(2[0-3])):([0-5][0-9])$@', $zone);
+                    }
+                }
+                return $out;
+            // Additional checks can be added here
+            default:
+                return TRUE;
         }
-        // Additional checks can be added here if needed
-        return $out;
     }
 
 
@@ -360,9 +381,11 @@ class ApiRequestSerialiser {
                     else {
                         $type = $param->type;
                         $type .= ($type === 'array') ? " of ".$param->items->type : '';
+                        $type .= ($type === 'dateTime') ? " (RFC3339)" : '';
+                        $type .= ($type === 'string' && $type->format === 'dateTime') ? " (RFC3339 dateTime)" : '';
                         $controller->setError(array(
                             "status" => 400,
-                            "dev" => "The parameter '$param->name' is defined as $type. '$value' is the wrong type.",
+                            "dev" => "The parameter '$param->name' is defined as $type. '$value' is the wrong type or an invalid value.",
                             "user" => "Your request is badly formed."
                         ));
                         return FALSE;
