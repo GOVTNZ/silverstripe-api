@@ -183,7 +183,7 @@ class ApiRequestSerialiser {
             case 'string':
                 // This could be split with a switch statement on format
                 $out = TRUE;
-                if ($param->type !== 'string' || $param->format === 'dateTime') {
+                if ($param->type !== 'string' || (isset($param->format) && $param->format === 'dateTime')) {
                     // 2015-08-01T00:00:00+12:00 || 2015-08-01T00:00:00Z
                     $core = substr($value, 0, 19);
                     $out = strlen($core) === 19 && preg_match('@^\d{4}(-)((0[1-9])|(1[0-2]))(-)((0[1-9])|([1-2][0-9])|(3[0-1]))(T)(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])$@', $core);
@@ -377,7 +377,7 @@ class ApiRequestSerialiser {
                 }
                 else if (isset($value)) {
                     if ($this->paramTypeMatch($param, $value))
-                        $controller->params[$param->name] = $controller->caseCamel($value);
+                        $controller->params[$param->name] = addslashes($value);
                     else {
                         $type = $param->type;
                         $type .= ($type === 'array') ? " of ".$param->items->type : '';
