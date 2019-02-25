@@ -1,7 +1,7 @@
 {
     "name": "govtnz/silverstripe-api",
-    "description": "A facade pattern API implementation for Silverstripe using interfaces and Swagger",
-    "type": "silverstripe-vendormodule",
+    "description": "A facade pattern API implementation for SilverStripe using interfaces and Swagger",
+    "type": "vendor-module",
     "homepage": "https://github.com/govtnz/silverstripe-api.git",
     "keywords": ["Silverstripe", "API", "Facade pattern", "PHP", "Interface"],
     "license": "MIT License",
@@ -15,7 +15,7 @@
     },
     "autoload": {
         "psr-4": {
-            "GovtNZ\\SilverStripe\\Api": "src"
+            "GovtNZ\\SilverStripe\\Api\\": "src"
         }
     },
     "extra": {
