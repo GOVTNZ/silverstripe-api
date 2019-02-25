@@ -1,6 +1,11 @@
 <?php
 
-class Api_Controller extends Page_Controller {
+namespace GovtNZ\SilverStripe\Api\Control;
+
+use PageController;
+
+class ApiController extends PageController
+{
 
     private static $allowed_actions = array(
         "index"
@@ -10,8 +15,7 @@ class Api_Controller extends Page_Controller {
         '$Version/$Noun//$Action' => 'index'
     );
 
-    private
-        $log = null;
+    private $log = null;
 
     public
         $action = '',
@@ -30,7 +34,7 @@ class Api_Controller extends Page_Controller {
         $sort = null,
         $status = 200,
         $swagger = null,
-        $test = FALSE,
+        $test = false,
         $total = 0,
         $verb = '',
         $version = 0,
@@ -38,7 +42,8 @@ class Api_Controller extends Page_Controller {
 
 
 
-    public function index(){
+    public function index()
+    {
         // Prepare
         ApiRequestSerialiser::execute($this);
         ApiAuthenticator::execute($this);
@@ -52,21 +57,21 @@ class Api_Controller extends Page_Controller {
                 $method = $this->method;
                 try {
                     $this->implementer->{$method}($this);
-                }
-                catch(Exception $except) {
-                    if ($this->status === 200)
+                } catch (Exception $except) {
+                    if ($this->status === 200) {
                         $this->setError(array(
                             "status" => 500,
                             "dev" => "Error processing request: please check your syntax against the request definition",
                             "user" => "This request could not be processed"
                         ));
+                    }
                 }
-            }
-            else if (Director::isDev())
+            } elseif (Director::isDev()) {
                 $this->testOutput();
-        }
-        else
+            }
+        } else {
             $this->populateErrorResponse();
+        }
 
         // Deliver
         $this->setStandardHeaders();
@@ -85,7 +90,8 @@ class Api_Controller extends Page_Controller {
      * @param $field
      * @return string
      */
-    public function caseCamel($field){
+    public function caseCamel($field)
+    {
         $out = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $field))));
         return $out;
     }
@@ -97,7 +103,8 @@ class Api_Controller extends Page_Controller {
      * @param $field
      * @return string
      */
-    public function caseRequest($field){
+    public function caseRequest($field)
+    {
         switch ($this->case) {
             case 'snake':
                 return $this->caseSnake($field);
@@ -113,10 +120,13 @@ class Api_Controller extends Page_Controller {
      * @param $field
      * @return string
      */
-    public function caseSnake($field){
-        $out = preg_replace_callback('/[A-Z]/',
+    public function caseSnake($field)
+    {
+        $out = preg_replace_callback(
+            '/[A-Z]/',
             create_function('$match', 'return "_" . strtolower($match[0]);'),
-            $field);
+            $field
+        );
         return $out;
     }
 
@@ -126,7 +136,8 @@ class Api_Controller extends Page_Controller {
      * A utility function that converts an RFC3339 timestamp (2015-06-28T00:00:00+12:00) to MySQL format (2015-06-28 00:00:00)
      * @param $input
      */
-    public function date3339toDB($input){
+    public function date3339toDB($input)
+    {
         // HTTPDecode will not restore the + before the timezone offset; this causes strtotime to break, so we must replace it
         $date = strtotime(str_replace(' ', '+', $input));
         return date('Y-m-d H:i:s', $date);
@@ -139,7 +150,8 @@ class Api_Controller extends Page_Controller {
      * @param $input
      * @return string
      */
-    public function dateDBto3339($input){
+    public function dateDBto3339($input)
+    {
         $offset = date('Z');
         $zone = sprintf("%s%02d:%02d", ($offset >= 0) ? '+' : '-', abs($offset / 3600), abs($offset % 3600));
         return str_replace(' ', 'T', $input).$zone;
@@ -151,8 +163,9 @@ class Api_Controller extends Page_Controller {
      * Returns an array with two nodes, one containing the query offset, count and total, the other containing the request data response.
      * @return array
      */
-    public function formatOutput(){
-        if ($this->status !== 200){
+    public function formatOutput()
+    {
+        if ($this->status !== 200) {
             $out = array(
                 "status" => $this->status,
                 "messages" => $this->error
@@ -178,13 +191,14 @@ class Api_Controller extends Page_Controller {
      * Loads the swagger.json file matching the requested API version.
      * @param $version
      */
-    public function loadSwagger($version){
+    public function loadSwagger($version)
+    {
         // Find the location of the swagger.json file with the right version
         $dir = Config::inst()->get('Swagger', 'data_dir');
         $dir = Director::baseFolder().((isset($dir)) ? $dir : "/assets/api");
         $swagger = "$dir/$version/swagger.json";
 
-        if (!file_exists($swagger)){
+        if (!file_exists($swagger)) {
             $this->setError(array(
                 "status" => 500,
                 "dev" => "The required file '$swagger' could not be found on the server",
@@ -204,10 +218,12 @@ class Api_Controller extends Page_Controller {
      * For development use only.
      * @param $text
      */
-    public function logAdd($text){
+    public function logAdd($text)
+    {
         // Create the log if/when it's first needed
-        if (is_null($this->log))
+        if (is_null($this->log)) {
             $this->log = array();
+        }
         $this->log[] = $text;
     }
 
@@ -218,7 +234,8 @@ class Api_Controller extends Page_Controller {
      * For development use only.
      * @return null
      */
-    public function logGet(){
+    public function logGet()
+    {
         return $this->log;
     }
 
@@ -229,7 +246,8 @@ class Api_Controller extends Page_Controller {
      * @param $name
      * @return string
      */
-    public function param($name){
+    public function param($name)
+    {
         return (isset($this->params[$name]) && trim($this->params[$name]) !== '') ? trim($this->params[$name]) : '';
     }
 
@@ -239,15 +257,18 @@ class Api_Controller extends Page_Controller {
      * Populates the error array and changes the controller status.
      * @param $params
      */
-    public function setError($params){
+    public function setError($params)
+    {
         // Create the error array if/when it's first needed
-        if (is_null($this->error))
+        if (is_null($this->error)) {
             $this->error = array();
-        foreach ($params as $key=>$value){
-            if ($key === "status")
+        }
+        foreach ($params as $key => $value) {
+            if ($key === "status") {
                 $this->status = $value;
-            else
+            } else {
                 $this->error[$key] = $value;
+            }
         }
     }
 
@@ -260,9 +281,11 @@ class Api_Controller extends Page_Controller {
      * @param $parent
      * @param $label
      */
-    public function xmlAdd($key, $parent, $label){
-        if (is_null($this->xml))
+    public function xmlAdd($key, $parent, $label)
+    {
+        if (is_null($this->xml)) {
             $this->xml = array();
+        }
         $this->xml["$key|$parent"] = $label;
     }
 
@@ -274,22 +297,25 @@ class Api_Controller extends Page_Controller {
      * @param $parent
      * @return string
      */
-    public function xmlLabel($key, $parent){
+    public function xmlLabel($key, $parent)
+    {
         $out = null;
 
         // If the xml array is populated, look up this combination
         if (!is_null($this->xml)) {
             $lookup = ((is_numeric($key)) ? "*" : $key)."|".((is_numeric($parent)) ? "*" : $parent);
-            if (array_key_exists($lookup, $this->xml))
+            if (array_key_exists($lookup, $this->xml)) {
                 $out = $this->xml[$lookup];
+            }
         }
 
         // Otherwise apply standard rules
-        if (is_null($out) || $out === ''){
-            if (is_numeric($key) && $parent[strlen($parent) - 1] === 's')
+        if (is_null($out) || $out === '') {
+            if (is_numeric($key) && $parent[strlen($parent) - 1] === 's') {
                 $out = substr($parent, 0, -1);
-            else
+            } else {
                 $out = ($key === $parent) ? $key.'s' : $key;
+            }
         }
         // A catch-all to ensure we don't return a numeric key, which will break the XML
         return (is_numeric($out)) ? "item" : $out;
@@ -297,7 +323,8 @@ class Api_Controller extends Page_Controller {
 
     // ------------------------------------------------------------------------
 
-    private function getImplementerClass(){
+    private function getImplementerClass()
+    {
         $version = sprintf('%02d', $this->version);
         $interface = "ApiInterface_$this->noun" . "_$version";
         $implementers = ClassInfo::implementorsOf($interface);
@@ -312,15 +339,16 @@ class Api_Controller extends Page_Controller {
 
         // Check for, and remove or return, any test implementation
         $pos = 0;
-        while ($pos < count($implementers) && count($implementers) > 1){
-            if (strpos(strtolower($implementers[$pos]), 'apistub_') === 0){
-                if ($this->test)
+        while ($pos < count($implementers) && count($implementers) > 1) {
+            if (strpos(strtolower($implementers[$pos]), 'apistub_') === 0) {
+                if ($this->test) {
                     return $implementers[$pos];
-                else
+                } else {
                     unset($implementers[$pos]);
-            }
-            else
+                }
+            } else {
                 $pos++;
+            }
         }
 
         // Ensure we only have one "real" implementation
@@ -331,13 +359,15 @@ class Api_Controller extends Page_Controller {
                 "user" => "The server is not able to fulfill this request"
             ));
             return null;
-        } else
+        } else {
             return $implementers[0];
+        }
     }
 
 
 
-    private function getResponseSerialiser(){
+    private function getResponseSerialiser()
+    {
         $class = "ApiResponseSerialiser_".ucfirst($this->format);
         $formatter = new $class();
         return $formatter;
@@ -345,13 +375,15 @@ class Api_Controller extends Page_Controller {
 
 
 
-    private function populateErrorResponse(){
+    private function populateErrorResponse()
+    {
         $this->output = $this->error;
     }
 
 
 
-    private function setStandardHeaders(){
+    private function setStandardHeaders()
+    {
         $this->getResponse()->setStatusCode($this->status);
         $this->getResponse()->addHeader("access-control-allow-origin", "*");
         $this->getResponse()->addHeader("access-control-allow-methods", "GET, POST, DELETE, PUT");
@@ -361,7 +393,8 @@ class Api_Controller extends Page_Controller {
 
 
 
-    private function testOutput(){
+    private function testOutput()
+    {
         $this->output = array(
             "log" => $this->logGet(),
             "action" => $this->action,
@@ -380,5 +413,4 @@ class Api_Controller extends Page_Controller {
             "version" => $this->version
         );
     }
-
 }

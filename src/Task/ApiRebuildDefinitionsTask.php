@@ -1,24 +1,34 @@
 <?php
 
-class ApiRebuildDefinitionsTask extends BuildTask {
+namespace GovtNZ\SilverStripe\Api\Task;
 
-    protected
-            $title = 'API: Rebuild definitions',
-            $description = 'Parse the API interface definitions and rebuild the output JSON file',
-            $enabled = true;
+use SilverStripe\Dev\BuildTask;
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
 
-    private
-        $baseUrl = '',
-        $swaggerDir = '';
+class ApiRebuildDefinitionsTask extends BuildTask
+{
 
-    public function run($request) {
+    protected $title = 'API: Rebuild definitions';
+
+    protected $description = 'Parse the API interface definitions and rebuild the output JSON file'
+
+    protected $enabled = true;
+
+    private $baseUrl = ''
+
+    private $swaggerDir = '';
+
+    public function run($request)
+    {
         $starttime = time();
 
         $api_data_dir = Director::baseFolder().Config::inst()->get('API', 'data_dir');
-        if (file_exists($api_data_dir)){
+        if (file_exists($api_data_dir)) {
             foreach (new DirectoryIterator($api_data_dir) as $subdir) {
-                if($subdir->isDir() && !$subdir->isDot())
+                if ($subdir->isDir() && !$subdir->isDot()) {
                     $this->buildSwagger($api_data_dir, $subdir->getFileName());
+                }
             }
         }
 
@@ -28,13 +38,14 @@ class ApiRebuildDefinitionsTask extends BuildTask {
 
     // ------------------------------------------------------------------------
 
-    private function buildSwagger($dir, $subdir){
+    private function buildSwagger($dir, $subdir)
+    {
         if (!file_exists("$dir/$subdir/interfaces")) {
             $this->out("Directory <em>$subdir</em> has no <em>interfaces</em> subdirectory", 'err');
             return;
         }
         $base = "$dir/$subdir/interfaces/base.txt";
-        if (!file_exists($base)){
+        if (!file_exists($base)) {
             $this->out("Directory <em>$subdir/interfaces</em> has no <em>base.txt</em> file", 'err');
             return;
         }
@@ -42,45 +53,51 @@ class ApiRebuildDefinitionsTask extends BuildTask {
         $swagger = array();
         $swagger = $this->mergeJsonFromFile($swagger, $base);
 
-        foreach (glob("$dir/$subdir/interfaces/ApiInterface_*.php") as $file){
+        foreach (glob("$dir/$subdir/interfaces/ApiInterface_*.php") as $file) {
             $swagger = $this->mergeJsonFromFile($swagger, $file);
         }
         // Save output
         $output = json_encode($swagger);
         $base = $this->getSwaggerBaseDir();
-        if (!file_exists($base."/$subdir"))
+        if (!file_exists($base."/$subdir")) {
             mkdir($base."/$subdir", 0755, true);
+        }
         file_put_contents($base."/$subdir/swagger.json", $output);
         $this->out("Created swagger.json for $subdir in $base/$subdir");
     }
 
-    private function getSwaggerBaseDir(){
+    private function getSwaggerBaseDir()
+    {
         if ($this->swaggerDir === '') {
             $dir = Config::inst()->get('Swagger', 'data_dir');
             $this->swaggerDir = Director::baseFolder() . ((isset($dir)) ? $dir : "/assets/api");
             // If the directory exists, empty it
-            if (file_exists($this->swaggerDir)){
+            if (file_exists($this->swaggerDir)) {
                 $dirs = array_diff(scandir($this->swaggerDir), array('.', '..'));
                 foreach ($dirs as $dir) {
                     if (is_dir("$this->swaggerDir/$dir")) {
                         $files = array_diff(scandir("$this->swaggerDir/$dir"), array('.', '..'));
-                        foreach ($files as $file)
+                        foreach ($files as $file) {
                             unlink("$this->swaggerDir/$dir/$file");
+                        }
                     }
                     rmdir("$this->swaggerDir/$dir");
                 }
             }
             // Otherwise create it
-            else
+            else {
                 mkdir($this->swaggerDir, 0755, true);
+            }
         }
         return $this->swaggerDir;
     }
 
-    private function mergeJsonBlock($swagger, $block){
+    private function mergeJsonBlock($swagger, $block)
+    {
         $json = json_decode($block, true);
-        if (is_null($swagger) || empty($swagger))
+        if (is_null($swagger) || empty($swagger)) {
             return $json;
+        }
         if (is_null($json)) {
             $this->out('Block beginning '.str_replace("\n", "", substr($block, 0, 80)).' is not valid JSON', 'err');
             return $swagger;
@@ -88,7 +105,8 @@ class ApiRebuildDefinitionsTask extends BuildTask {
         return array_merge_recursive($swagger, $json);
     }
 
-    private function mergeJsonFromFile($swagger, $file){
+    private function mergeJsonFromFile($swagger, $file)
+    {
         $handle = fopen($file, "r");
         if ($handle) {
             $block = '';
@@ -98,17 +116,17 @@ class ApiRebuildDefinitionsTask extends BuildTask {
                     $json = false;
                     $swagger = $this->mergeJsonBlock($swagger, $block);
                     $block = '';
-                }
-                else if ($json && strpos(trim($line), '//') !== 0){
+                } elseif ($json && strpos(trim($line), '//') !== 0) {
                     $line = $this->parseJson($line);
                     $block .= $line;
-                }
-                else if (strpos(trim($line), '//') !== 0 && strpos($line, '/*') !== false)
+                } elseif (strpos(trim($line), '//') !== 0 && strpos($line, '/*') !== false) {
                     $json = true;
+                }
             }
             fclose($handle);
-        } else
+        } else {
             $this->out("File <em>$file</em> cannot be opened for reading", 'err');
+        }
         return $swagger;
     }
 
@@ -116,19 +134,22 @@ class ApiRebuildDefinitionsTask extends BuildTask {
      * Format progress to stdout
      * @param $text
      */
-    private function out($text, $type = 'std'){
-        if ($type === 'err')
+    private function out($text, $type = 'std')
+    {
+        if ($type === 'err') {
             echo ' &nbsp; &middot; &nbsp;<span style="color:#cc0000">'.$text.'</span><br />';
-        else
+        } else {
             echo ' &nbsp; &middot; &nbsp;'.$text.'<br />';
+        }
     }
 
-    private function parseJson($line){
+    private function parseJson($line)
+    {
         $cmdStart = strpos($line, '<%');
         $cmdEnd = strpos($line, '%>');
-        if ($cmdStart !== false && $cmdEnd !== false){
+        if ($cmdStart !== false && $cmdEnd !== false) {
             $cmd = trim(substr($line, $cmdStart + 2, $cmdEnd - ($cmdStart + 2)));
-            switch($cmd){
+            switch ($cmd) {
                 case 'getHost':
                     $value = $this->urlGetHost();
                     break;
@@ -138,25 +159,29 @@ class ApiRebuildDefinitionsTask extends BuildTask {
                 default:
                     $value = '';
             }
-            if ($value !== '')
+            if ($value !== '') {
                 $line = substr($line, 0, $cmdStart).$value.substr($line, $cmdEnd + 2);
+            }
         }
         return $line;
     }
 
-    private function urlCheck(){
-        if ($this->baseUrl === '')
+    private function urlCheck()
+    {
+        if ($this->baseUrl === '') {
             $this->baseUrl = Director::absoluteBaseURL();
+        }
     }
 
-    private function urlGetHost(){
+    private function urlGetHost()
+    {
         $this->urlCheck();
         return substr($this->baseUrl, strpos($this->baseUrl, '://') + 3)."api";
     }
 
-    private function urlGetProtocol(){
+    private function urlGetProtocol()
+    {
         $this->urlCheck();
         return substr($this->baseUrl, 0, strpos($this->baseUrl, '://'));
     }
-
 }

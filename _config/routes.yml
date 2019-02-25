@@ -1,7 +1,7 @@
 ---
-Name: silverstripeapiroutes
+Name: silverstripe-api-routes
 After: framework/routes#coreroutes
 ---
-Director:
+SilverStripe\Control\Director:
   rules:
-    'api': 'Api_Controller'
+    'api': 'GovtNZ\SilverStripe\Api\Control\ApiController'

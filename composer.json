@@ -18,6 +18,12 @@
             "GovtNZ\\SilverStripe\\Api\\": "src"
         }
     },
+    "scripts": {
+        "remove-uses": "php-cs-fixer fix src/ --rules=no_unused_imports",
+        "lint": "phpcs --extensions=php src/",
+        "syntax-check": "find src/",
+        "lint-clean": "phpcbf src/"
+    },
     "extra": {
       "branch-alias": {
         "dev-master": "2.x-dev"

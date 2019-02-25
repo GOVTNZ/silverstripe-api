@@ -1,8 +1,12 @@
 <?php
 
-class ApiResponseSerialiser_Json {
+namespace GovtNZ\SilverStripe\Api;
 
-    public function execute($controller){
+class ApiResponseSerialiser_Json
+{
+
+    public function execute($controller)
+    {
         $controller->getResponse()->addHeader('Content-Type', 'application/json');
         return $this->json_format($controller->formatOutput());
     }
@@ -18,7 +22,8 @@ class ApiResponseSerialiser_Json {
      *        and should be converted to JSON first of all.
      * @return string Indented version of the original JSON string
      */
-    private function json_format($json) {
+    private function json_format($json)
+    {
         if (!is_string($json)) {
             if (phpversion() && phpversion() >= 5.4) {
                 return json_encode($json, JSON_PRETTY_PRINT);
@@ -61,7 +66,7 @@ class ApiResponseSerialiser_Json {
             }
             // If this character is the end of an element,
             // output a new line and indent the next line
-            else if ($outOfQuotes && ($char === '}' || $char === ']')) {
+            elseif ($outOfQuotes && ($char === '}' || $char === ']')) {
                 $result .= $newLine;
                 $pos--;
                 for ($j = 0; $j < $pos; $j++) {
@@ -69,7 +74,7 @@ class ApiResponseSerialiser_Json {
                 }
             }
             // eat all non-essential whitespace in the input as we do our own here and it would only mess up our process
-            else if ($outOfQuotes && false !== strpos(" \t\r\n", $char)) {
+            elseif ($outOfQuotes && false !== strpos(" \t\r\n", $char)) {
                 continue;
             }
             // Add the character to the result string
@@ -80,7 +85,7 @@ class ApiResponseSerialiser_Json {
             }
             // If the last character was the beginning of an element,
             // output a new line and indent the next line
-            else if ($outOfQuotes && ($char === ',' || $char === '{' || $char === '[')) {
+            elseif ($outOfQuotes && ($char === ',' || $char === '{' || $char === '[')) {
                 $result .= $newLine;
                 if ($char === '{' || $char === '[') {
                     $pos++;
@@ -93,5 +98,4 @@ class ApiResponseSerialiser_Json {
         }
         return $result;
     }
-
 }

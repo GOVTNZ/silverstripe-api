@@ -1,9 +1,11 @@
 <?php
 
-class ApiAuthenticator {
+namespace GovtNZ\SilverStripe\Api;
 
-    public static function execute($controller){
+class ApiAuthenticator
+{
+    public static function execute($controller)
+    {
         $controller->logAdd('Authenticator executed');
     }
-
 }
