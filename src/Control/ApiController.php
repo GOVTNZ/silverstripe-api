@@ -3,17 +3,41 @@
 namespace GovtNZ\SilverStripe\Api\Control;
 
 use PageController;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Control\Director;
+use GovtNZ\SilverStripe\Api\ApiRequestSerialiser;
+use GovtNZ\SilverStripe\Api\ApiAuthenticator;
+use GovtNZ\SilverStripe\Api\ApiResponseSerialiser_Json;
+use GovtNZ\SilverStripe\Api\ApiResponseSerialiser_Xml;
 
+/**
+ * For each incoming request, an instance of *Ap_Controller* is created, and
+ * this controller then manages the following steps:
+ *
+ * *ApiRequestSerialiser* is invoked to parse the request. Request field names
+ * are converted to camelCase at this point.
+ *
+ * The controller loads the *swagger.json* file to determine which interface
+ * and function should handle the request.
+ *
+ * The controller invokes the implementation class for the required interface
+ * and calls the indicated function.
+ *
+ * The implementation class retrieves the requested data.
+ *
+ * One of the *ApiResponseSerialiser* classes is invoked to return the data in
+ * the requested format.
+ */
 class ApiController extends PageController
 {
 
-    private static $allowed_actions = array(
+    private static $allowed_actions = [
         "index"
-    );
+    ];
 
-    private static $url_handlers = array(
+    private static $url_handlers = [
         '$Version/$Noun//$Action' => 'index'
-    );
+    ];
 
     private $log = null;
 
@@ -195,8 +219,16 @@ class ApiController extends PageController
     {
         // Find the location of the swagger.json file with the right version
         $dir = Config::inst()->get('Swagger', 'data_dir');
-        $dir = Director::baseFolder().((isset($dir)) ? $dir : "/assets/api");
-        $swagger = "$dir/$version/swagger.json";
+
+        if (!$dir) {
+            $dir = self::join_links(ASSETS_PATH, 'api');
+        }
+
+        $swagger = self::join_links(
+            $dir,
+            $version,
+            'swagger.json'
+        );
 
         if (!file_exists($swagger)) {
             $this->setError(array(
@@ -211,11 +243,9 @@ class ApiController extends PageController
         $this->swagger = json_decode($json);
     }
 
-
-
     /**
-     * Adds text to the log.
-     * For development use only.
+     * Adds text to the log. For development use only.
+     *
      * @param $text
      */
     public function logAdd($text)
@@ -224,22 +254,18 @@ class ApiController extends PageController
         if (is_null($this->log)) {
             $this->log = array();
         }
+
         $this->log[] = $text;
     }
 
-
-
     /**
-     * Retrieves the log array.
-     * For development use only.
+     * Retrieves the log array. For development use only.
      * @return null
      */
     public function logGet()
     {
         return $this->log;
     }
-
-
 
     /**
      * Returns either the request parameter $name, or an empty string if this doesn't exist.
@@ -364,23 +390,17 @@ class ApiController extends PageController
         }
     }
 
-
-
     private function getResponseSerialiser()
     {
-        $class = "ApiResponseSerialiser_".ucfirst($this->format);
+        $class = "GovtNZ\SilverStripe\Api\ApiResponseSerialiser_".ucfirst($this->format);
         $formatter = new $class();
         return $formatter;
     }
-
-
 
     private function populateErrorResponse()
     {
         $this->output = $this->error;
     }
-
-
 
     private function setStandardHeaders()
     {
@@ -390,8 +410,6 @@ class ApiController extends PageController
         $this->getResponse()->addHeader("access-control-allow-headers", "api_key, Authorization");
         $this->getResponse()->addHeader("connection", "close");
     }
-
-
 
     private function testOutput()
     {

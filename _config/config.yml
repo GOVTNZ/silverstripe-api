@@ -1,6 +1,5 @@
 ---
-Name: api
-After: 'framework/*','cms/*'
+Name: silverstripe-api
 ---
 
 API:

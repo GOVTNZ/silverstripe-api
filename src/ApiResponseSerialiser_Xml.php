@@ -11,7 +11,6 @@ class ApiResponseSerialiser_Xml
         return $this->xml_format($controller);
     }
 
-    // function definition to convert array to xml
     private function array_to_xml($data, &$xml, $parent, $controller)
     {
         foreach ($data as $key => $value) {
