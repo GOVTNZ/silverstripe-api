@@ -55,18 +55,19 @@ learn the other available API requests.
 
 ```
 GovtNZ\SilverStripe\Api\ApiManager:
-    v1:
-        definition: 'path/to/base.txt'
-        interfaces:
-            - ApiInterfaceOne
-        stubs
-            - ApiInterfaceStubOne
-    v2:
-        definition: 'path/to/base.txt'
-        interfaces:
-            - ApiInterfaceOne
-        stubs
-            - ApiInterfaceStubOne
+    api:
+        v1:
+            definition: 'path/to/base.txt'
+            interfaces:
+                - ApiInterfaceOne
+            stubs
+                - ApiInterfaceStubOne
+        v2:
+            definition: 'path/to/base.txt'
+            interfaces:
+                - ApiInterfaceOne
+            stubs
+                - ApiInterfaceStubOne
 
 ```
 

@@ -3,12 +3,15 @@
 namespace GovtNZ\SilverStripe\Api\Control;
 
 use PageController;
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\Director;
 use GovtNZ\SilverStripe\Api\ApiRequestSerialiser;
 use GovtNZ\SilverStripe\Api\ApiAuthenticator;
 use GovtNZ\SilverStripe\Api\ApiResponseSerialiser_Json;
 use GovtNZ\SilverStripe\Api\ApiResponseSerialiser_Xml;
+use GovtNZ\SilverStripe\Api\ApiManager;
+use SilverStripe\Dev\TestOnly;
 
 /**
  * For each incoming request, an instance of *Ap_Controller* is created, and
@@ -347,26 +350,61 @@ class ApiController extends PageController
         return (is_numeric($out)) ? "item" : $out;
     }
 
-    // ------------------------------------------------------------------------
-
+    /**
+     * Returns the interface class for the provided request.
+     *
+     * @return string
+     */
     private function getImplementerClass()
     {
-        $version = sprintf('%02d', $this->version);
-        $interface = "ApiInterface_$this->noun" . "_$version";
+        $api = Config::inst()->get(ApiManager::class, 'api');
+
+        if (!isset($api[$this->version]) && !isset($api['v'. $this->version])) {
+            $this->setError(array(
+                "status" => 500,
+                "dev" => "There is no implementation for version $this->version in API",
+                "user" => "The server is not able to fulfill this request"
+            ));
+
+            return null;
+        }
+
+        $version = (isset($api[$this->version]))
+            ? $api[$this->version]
+            : $api['v'. $this->version];
+
+        if (!isset($version['interfaces'])) {
+            if (!isset($version['interfaces'][$this->noun])) {
+                $this->setError(array(
+                    "status" => 500,
+                    "dev" => "There is no interfaces implemented for version $this->version in API",
+                    "user" => "The server is not able to fulfill this request"
+                ));
+
+                return null;
+            }
+        }
+
+        $interface = $version['interfaces'][$this->noun];
         $implementers = ClassInfo::implementorsOf($interface);
+
         if (count($implementers) === 0) {
             $this->setError(array(
                 "status" => 500,
                 "dev" => "There is no implementation for $this->noun in API v$this->version",
                 "user" => "The server is not able to fulfill this request"
             ));
+
             return null;
         }
 
         // Check for, and remove or return, any test implementation
         $pos = 0;
+
         while ($pos < count($implementers) && count($implementers) > 1) {
-            if (strpos(strtolower($implementers[$pos]), 'apistub_') === 0) {
+            $testInterface = singleton($implementers[$pos]) instanceof TestOnly;
+
+            if ($testInterface) {
                 if ($this->test) {
                     return $implementers[$pos];
                 } else {
@@ -386,7 +424,7 @@ class ApiController extends PageController
             ));
             return null;
         } else {
-            return $implementers[0];
+            return array_shift($implementers);
         }
     }
 
@@ -394,6 +432,7 @@ class ApiController extends PageController
     {
         $class = "GovtNZ\SilverStripe\Api\ApiResponseSerialiser_".ucfirst($this->format);
         $formatter = new $class();
+
         return $formatter;
     }
 

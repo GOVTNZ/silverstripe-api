@@ -57,16 +57,17 @@ class ApiRebuildDefinitionsTask extends BuildTask
             }
         }
 
-        $this->buildSwagger($definition, $interfaces);
+        $this->buildSwagger($definition, $interfaces, $settings);
     }
 
     /**
      * @param string $definitionFile
      * @param array $interfacePaths
+     * @param array $context
      *
      * @return void
      */
-    protected function buildSwagger($definitionFile, array $interfacePaths)
+    protected function buildSwagger($definitionFile, array $interfacePaths, array $context)
     {
         $swagger = array();
         $swagger = $this->mergeJsonFromFile($swagger, $definitionFile);
@@ -79,8 +80,16 @@ class ApiRebuildDefinitionsTask extends BuildTask
         $output = json_encode($swagger);
         $writeTo = $this->getSwaggerBaseDir();
 
+        $versionPath = Controller::join_links($writeTo, $context['version']);
+
+        if (file_exists($versionPath)) {
+            $this->emptyDir($versionPath);
+        } else {
+            mkdir($versionPath, 0755, true);
+        }
+
         file_put_contents(
-            Controller::join_links($writeTo, "swagger.json"),
+            Controller::join_links($versionPath, "swagger.json"),
             $output
         );
 
