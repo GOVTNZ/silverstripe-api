@@ -1,6 +1,7 @@
 <?php
 
-class ApiStub_section extends DataModel implements ApiInterface_section_01 {
+class ApiStub_section extends DataModel implements ApiInterface_section_01
+{
 
     private $sections = array(
             array(
@@ -25,18 +26,19 @@ class ApiStub_section extends DataModel implements ApiInterface_section_01 {
             )
     );
 
-    public function getSectionById($controller){
+    public function getSectionById($controller)
+    {
         $id = intval($controller->action);
-        foreach ($this->sections as $section){
-            if ($section['id'] === $id){
+        foreach ($this->sections as $section) {
+            if ($section['id'] === $id) {
                 $controller->output[] = $section;
                 return;
             }
         }
     }
 
-    public function getSections($controller){
+    public function getSections($controller)
+    {
         $controller->output = $this->sections;
     }
-
 }

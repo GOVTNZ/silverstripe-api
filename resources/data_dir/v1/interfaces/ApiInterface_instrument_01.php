@@ -1,6 +1,7 @@
 <?php
 
-interface ApiInterface_instrument_01 {
+interface ApiInterface_instrument_01
+{
 
     // When "API: Build definitions" is called, everything between /* */ tags will be merged recursively to create the api.json file.
     // Structure within this file is purely for readability: all the JSON comment could be in a single block if you prefer.
@@ -145,5 +146,4 @@ interface ApiInterface_instrument_01 {
               }
             }
         */
-
 }

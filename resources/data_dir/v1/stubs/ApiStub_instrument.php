@@ -1,6 +1,7 @@
 <?php
 
-class ApiStub_instrument extends DataModel implements ApiInterface_instrument_01 {
+class ApiStub_instrument extends DataModel implements ApiInterface_instrument_01
+{
 
     private $instruments = array(
 
@@ -167,9 +168,10 @@ class ApiStub_instrument extends DataModel implements ApiInterface_instrument_01
         )
     );
 
-    public function findInstrumentsBySection(Api_Controller $controller){
+    public function findInstrumentsBySection(Api_Controller $controller)
+    {
         $section = $controller->params['section'];
-        if (!isset($section)){
+        if (!isset($section)) {
             $controller->setError(array(
                 "status" => 400,
                 "dev" => "No section supplied",
@@ -177,23 +179,23 @@ class ApiStub_instrument extends DataModel implements ApiInterface_instrument_01
             ));
             return;
         }
-        foreach ($this->instruments as $instrument){
+        foreach ($this->instruments as $instrument) {
             $sec = ','.$section.',';
             $insec = ','.$instrument['section'].',';
-            if (strpos(','.strtolower($section).',', ','.strtolower($instrument['section']).',') !== FALSE) {
+            if (strpos(','.strtolower($section).',', ','.strtolower($instrument['section']).',') !== false) {
                 $controller->output[] = $instrument;
             }
         }
     }
 
-    public function getInstrumentById(Api_Controller $controller){
+    public function getInstrumentById(Api_Controller $controller)
+    {
         $id = intval($controller->action);
-        foreach ($this->instruments as $instrument){
+        foreach ($this->instruments as $instrument) {
             if ($instrument['id'] === $id) {
                 $controller->output[] = $instrument;
                 return;
             }
         }
     }
-
 }

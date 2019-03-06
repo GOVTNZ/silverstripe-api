@@ -50,7 +50,7 @@ class ApiRebuildDefinitionsTask extends BuildTask
         foreach ($settings['interfaces'] as $interface) {
             if (is_file($interface)) {
                 $interfaces[] = $interface;
-            } else if (is_dir($interface)) {
+            } elseif (is_dir($interface)) {
                 foreach (glob("$interface/*.php") as $file) {
                     $interfaces[] = $file;
                 }
@@ -62,8 +62,8 @@ class ApiRebuildDefinitionsTask extends BuildTask
 
     /**
      * @param string $definitionFile
-     * @param array $interfacePaths
-     * @param array $context
+     * @param array  $interfacePaths
+     * @param array  $context
      *
      * @return void
      */

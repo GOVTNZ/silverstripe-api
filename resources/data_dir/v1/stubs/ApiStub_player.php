@@ -1,6 +1,7 @@
 <?php
 
-class ApiStub_player extends DataModel implements ApiInterface_player_01 {
+class ApiStub_player extends DataModel implements ApiInterface_player_01
+{
 
     private $players = array(
         array(
@@ -119,9 +120,10 @@ class ApiStub_player extends DataModel implements ApiInterface_player_01 {
         )
     );
 
-    public function findPlayersByInstrument($controller){
+    public function findPlayersByInstrument($controller)
+    {
         $instr = $controller->params['instrumentID'];
-        if (!isset($instr)){
+        if (!isset($instr)) {
             $controller->setError(array(
                 "status" => 400,
                 "dev" => "An instrumentID must be supplied as a query parameter (eg ?instrumentID=6)",
@@ -129,20 +131,21 @@ class ApiStub_player extends DataModel implements ApiInterface_player_01 {
             ));
             return;
         }
-        foreach ($this->players as $player){
-            if (in_array($instr, $player['instrument']))
+        foreach ($this->players as $player) {
+            if (in_array($instr, $player['instrument'])) {
                 $controller->output[] = $player;
+            }
         }
     }
 
-    public function getPlayerById($controller){
+    public function getPlayerById($controller)
+    {
         $id = intval($controller->action);
-        foreach ($this->players as $player){
+        foreach ($this->players as $player) {
             if ($player['id'] === $id) {
                 $controller->output[] = $player;
                 return;
             }
         }
     }
-
 }
