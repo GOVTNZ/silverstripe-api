@@ -3,7 +3,7 @@
 A facade pattern API implementation for SilverStripe using interfaces and optionally Swagger.
 
 [![Build Status](http://img.shields.io/travis/govtnz/silverstripe-api.svg?style=flat-square)](http://travis-ci.org/govtnz/silverstripe-api)
-[![Version](http://img.shields.io/packagist/v/wilr/silverstripe-api.svg?style=flat-square)](https://packagist.org/packages/govtnz/silverstripe-api)
+[![Version](http://img.shields.io/packagist/v/govtnz/silverstripe-api.svg?style=flat-square)](https://packagist.org/packages/govtnz/silverstripe-api)
 [![License](http://img.shields.io/packagist/l/govtnz/silverstripe-api.svg?style=flat-square)](LICENSE.md)
 
 ## Introduction
