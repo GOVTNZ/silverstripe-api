@@ -1,6 +1,8 @@
 ---
 Name: silverstripe-api
 ---
-
 API:
   default_pagination: 20
+SilverStripe\Assets\File:
+  allowed_extensions:
+    - 'json'

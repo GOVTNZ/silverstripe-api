@@ -7,6 +7,7 @@ use GovtNZ\SilverStripe\Api\ApiManager;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Manifest\ClassLoader;
 use DirectoryIterator;
 
 class ApiRebuildDefinitionsTask extends BuildTask
@@ -16,6 +17,8 @@ class ApiRebuildDefinitionsTask extends BuildTask
     protected $description = 'Parse the API interface definitions and rebuild the output JSON file';
 
     protected $enabled = true;
+
+    protected $quiet = false;
 
     private static $segment = 'ApiRebuildDefinitionsTask';
 
@@ -42,38 +45,38 @@ class ApiRebuildDefinitionsTask extends BuildTask
         $this->out("<strong>Task completed in $elapsed</strong>");
     }
 
+    public function setQuiet($quiet)
+    {
+        $this->quiet = $quiet;
+
+        return $this;
+    }
+
     public function buildSwaggerDefinition($key, $settings)
     {
-        $definition = $settings['definition'];
-        $interfaces = [];
-
-        foreach ($settings['interfaces'] as $interface) {
-            if (is_file($interface)) {
-                $interfaces[] = $interface;
-            } elseif (is_dir($interface)) {
-                foreach (glob("$interface/*.php") as $file) {
-                    $interfaces[] = $file;
-                }
-            }
-        }
-
-        $this->buildSwagger($definition, $interfaces, $settings);
+        $this->buildSwagger($settings['definition'], $settings['interfaces'], $settings);
     }
 
     /**
-     * @param string $definitionFile
-     * @param array  $interfacePaths
+     * @param string $definitionFilePath
+     * @param string[] $interfaces names of classes or paths
      * @param array  $context
      *
      * @return void
      */
-    protected function buildSwagger($definitionFile, array $interfacePaths, array $context)
+    protected function buildSwagger($definitionFilePath, array $interfaces, array $context)
     {
         $swagger = array();
-        $swagger = $this->mergeJsonFromFile($swagger, $definitionFile);
+        $swagger = $this->mergeJsonFromFile($swagger, $definitionFilePath);
 
-        foreach ($interfacePaths as $file) {
-            $swagger = $this->mergeJsonFromFile($swagger, $file);
+        foreach ($interfaces as $interface) {
+            if (file_exists($interface)) {
+                $swagger = $this->mergeJsonFromFile($swagger, $interface);
+            } else {
+                $path = ClassLoader::inst()->getItemPath($interface);
+
+                $swagger = $this->mergeJsonFromFile($swagger, $path);
+            }
         }
 
         // Save output
@@ -88,12 +91,13 @@ class ApiRebuildDefinitionsTask extends BuildTask
             mkdir($versionPath, 0755, true);
         }
 
+        $path = Controller::join_links($versionPath, "swagger.json");
         file_put_contents(
-            Controller::join_links($versionPath, "swagger.json"),
+            $path,
             $output
         );
 
-        $this->out("Created swagger.json in $writeTo");
+        $this->out("Created swagger.json file: $path", 'success');
     }
 
     protected function emptyDir($dir)
@@ -104,6 +108,14 @@ class ApiRebuildDefinitionsTask extends BuildTask
             $path = Controller::join_links($dir, $childDir);
 
             if (is_dir($path)) {
+                $objects = scandir($path);
+
+                foreach ($objects as $object) {
+                    if ($object != "." && $object != "..") {
+                        unlink($path."/".$object);
+                    }
+                }
+
                 rmdir($path);
             } else {
                 unlink($path);
@@ -117,7 +129,7 @@ class ApiRebuildDefinitionsTask extends BuildTask
             $this->swaggerDir = Config::inst()->get('Swagger', 'data_dir');
 
             if (!$this->swaggerDir) {
-                $this->swaggerDir = Controller::join_links(ASSETS_PATH, 'api');
+                $this->swaggerDir = ApiManager::create()->getDefaultPath();
             }
 
             if (file_exists($this->swaggerDir)) {
@@ -185,10 +197,14 @@ class ApiRebuildDefinitionsTask extends BuildTask
     protected function out($text, $type = 'std')
     {
         if (Director::is_cli()) {
+            $text = strip_tags($text);
+
             if ($type === 'err') {
                 echo "\033[31m [WARNING] ". $text ."\033[0m". PHP_EOL;
+            } else if ($type === 'success') {
+                echo "\xE2\x9C\x85 \033[37m". $text ."\033[0m".PHP_EOL;
             } else {
-                echo " [*] \033[31m". $text ."\033[0m" .PHP_EOL;
+                echo " \033[37m". $text ."\033[0m" .PHP_EOL;
             }
         } else {
             if ($type === 'err') {

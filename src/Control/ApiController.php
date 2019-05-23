@@ -224,7 +224,7 @@ class ApiController extends PageController
         $dir = Config::inst()->get('Swagger', 'data_dir');
 
         if (!$dir) {
-            $dir = self::join_links(ASSETS_PATH, 'api');
+            $dir = ApiManager::create()->getDefaultPath();
         }
 
         $swagger = self::join_links(
