@@ -14,7 +14,7 @@ use GovtNZ\SilverStripe\Api\ApiManager;
 use SilverStripe\Dev\TestOnly;
 
 /**
- * For each incoming request, an instance of *Ap_Controller* is created, and
+ * For each incoming request, an instance of *ApiController* is created, and
  * this controller then manages the following steps:
  *
  * *ApiRequestSerialiser* is invoked to parse the request. Request field names
@@ -160,7 +160,8 @@ class ApiController extends PageController
 
 
     /**
-     * A utility function that converts an RFC3339 timestamp (2015-06-28T00:00:00+12:00) to MySQL format (2015-06-28 00:00:00)
+     * A utility function that converts an RFC3339 timestamp
+     * (2015-06-28T00:00:00+12:00) to MySQL format (2015-06-28 00:00:00)
      * @param $input
      */
     public function date3339toDB($input)

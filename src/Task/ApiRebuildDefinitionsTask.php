@@ -201,7 +201,7 @@ class ApiRebuildDefinitionsTask extends BuildTask
 
             if ($type === 'err') {
                 echo "\033[31m [WARNING] ". $text ."\033[0m". PHP_EOL;
-            } else if ($type === 'success') {
+            } elseif ($type === 'success') {
                 echo "\xE2\x9C\x85 \033[37m". $text ."\033[0m".PHP_EOL;
             } else {
                 echo " \033[37m". $text ."\033[0m" .PHP_EOL;
